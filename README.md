@@ -17,7 +17,7 @@ GNU General Public License 3 and later
 
 ## Compilation & Installation
 
-Prerequisites: Apache Maven 3, Java 1.6, DistSysJavaHelpers 1.0 (can be obtained from: https://github.com/kecskemeti/DistSysJavaHelpers ), DISSECT-CF 0.9.6-SNAPSHOT (https://github.com/kecskemeti/dissect-cf)
+Prerequisites: Apache Maven 3, Java 1.6, [DistSysJavaHelpers 1.0](https://github.com/kecskemeti/DistSysJavaHelpers), [DISSECT-CF 0.9.6-SNAPSHOT](https://github.com/kecskemeti/dissect-cf)
 
 After cloning and installing the prerequisites, run the following in the main dir of the checkout:
 

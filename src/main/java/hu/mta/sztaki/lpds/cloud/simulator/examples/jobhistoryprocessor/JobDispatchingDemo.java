@@ -29,6 +29,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GWFReader;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GenericTraceProducer;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.One2HistoryReader;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.RepetitiveRandomTraceGenerator;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.SWFReader;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.SchedulingDependentMachines;
@@ -216,8 +217,10 @@ public class JobDispatchingDemo {
 			// The trace comes from a file, we need to see what kind to pick the
 			// right loader
 			producer = args[0].endsWith(".gwf") ? new GWFReader(args[0], from,
-					to, false, DCFJob.class) : new One2HistoryReader(args[0],
-					from, to, false, DCFJob.class);
+					to, false, DCFJob.class)
+					: (args[0].endsWith(".swf") ? new SWFReader(args[0], from,
+							to, false, DCFJob.class) : new One2HistoryReader(
+							args[0], from, to, false, DCFJob.class));
 		} else {
 			// The trace comes in the form of generic random trace
 			// characteristics.

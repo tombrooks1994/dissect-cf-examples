@@ -29,7 +29,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.helpers.job.JobListAnalyser;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GenericTraceProducer;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.ResourceConstraints;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.UnalterableConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
@@ -152,7 +152,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 			currentRepo.registerObject(va);
 			// determining the maximum number of CPU cores available in a PM
 			for (PhysicalMachine pm : iaas.machines) {
-				double cores = pm.getCapacities().requiredCPUs;
+				double cores = pm.getCapacities().getRequiredCPUs();
 				if (cores > maxmachinecores) {
 					maxmachinecores = (long) cores;
 				}
@@ -190,9 +190,12 @@ public class MultiIaaSJobDispatcher extends Timed {
 					final VirtualMachine[] vms = target.get(targetIndex)
 							.requestVM(
 									va,
-									new ResourceConstraints(requestedprocs,
-											useThisProcPower,
-											isMinimumProcPower, 512000000),
+									UnalterableConstraints
+											.directUnalterableCreator(
+													requestedprocs,
+													useThisProcPower,
+													isMinimumProcPower,
+													512000000),
 									repo.get(targetIndex), requestedinstances);
 
 					// doing a round robin scheduling for the target
@@ -261,7 +264,8 @@ public class MultiIaaSJobDispatcher extends Timed {
 										// run the job's relevant part in the VM
 										vm.newComputeTask(
 												toprocess.getExectimeSecs()
-														* vm.getResourceAllocation().allocated.requiredCPUs,
+														* vm.getResourceAllocation().allocated
+																.getRequiredCPUs(),
 												ResourceConsumption.unlimitedProcessing,
 												new ResourceConsumption.ConsumptionEvent() {
 													/**

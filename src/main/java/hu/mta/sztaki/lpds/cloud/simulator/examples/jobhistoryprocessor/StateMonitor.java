@@ -127,8 +127,8 @@ class StateMonitor extends Timed {
 				PhysicalMachine pm = iaas.machines.get(j);
 				current.finishedVMs += pm.getCompletedVMs();
 				current.runningVMs += pm.numofCurrentVMs();
-				current.usedCores += pm.getCapacities().requiredCPUs
-						- pm.getFreeCapacities().requiredCPUs;
+				current.usedCores += pm.getCapacities().getRequiredCPUs()
+						- pm.freeCapacities.getRequiredCPUs();
 				current.runningPMs += pm.isRunning() ? 1 : 0;
 			}
 			current.queueLen += iaas.sched.getQueueLength();

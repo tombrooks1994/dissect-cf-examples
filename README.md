@@ -17,7 +17,7 @@ GNU General Public License 3 and later
 
 ## Compilation & Installation
 
-Prerequisites: Apache Maven 3, Java 1.6, [DistSysJavaHelpers 1.0](https://github.com/kecskemeti/DistSysJavaHelpers), [DISSECT-CF 0.9.6-SNAPSHOT](https://github.com/kecskemeti/dissect-cf)
+Prerequisites: Apache Maven 3, Java 1.6, [DistSysJavaHelpers 1.0.1](https://github.com/kecskemeti/DistSysJavaHelpers), [DISSECT-CF 0.9.6-SNAPSHOT](https://github.com/kecskemeti/dissect-cf)
 
 After cloning and installing the prerequisites, run the following in the main dir of the checkout:
 
@@ -41,3 +41,7 @@ Currently the example set contains 4 more complex sample codes which show some m
 * `hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor.JobDispatchingDemo` reveals the most complex sample, where a trace (either loaded from a file or generated) of jobs is executed on automatically created virtual machines in one or more cloud infrastructures.
 
 Please note that all these examples are provided as simple samples and not inteded for advanced use. Most of them are simplified to allow easy understanding of the underlying concepts in the simulator.
+
+## Remarks
+
+##### Warning: the master branch of the examples is intended as a development branch, and might not contain a functional version!

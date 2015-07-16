@@ -24,7 +24,7 @@
 package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
 
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
-import hu.mta.sztaki.lpds.cloud.simulator.energy.specialized.PhysicalMachineEnergyMeter;
+import hu.mta.sztaki.lpds.cloud.simulator.energy.specialized.IaaSEnergyMeter;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 
@@ -59,7 +59,7 @@ class StateMonitor extends Timed {
 	 * the system. Please note that the monitor does not recognize the changes
 	 * in the set of PMs in an IaaSService.
 	 */
-	private ArrayList<PhysicalMachineEnergyMeter> meters = new ArrayList<PhysicalMachineEnergyMeter>();
+	private ArrayList<IaaSEnergyMeter> meters = new ArrayList<IaaSEnergyMeter>();
 	/**
 	 * The dispatcher which sends the jobs to the actual clouds in some VMs. The
 	 * dispatcher is expected to unsubscribe from timing events if it is no
@@ -104,13 +104,9 @@ class StateMonitor extends Timed {
 		this.iaasList = iaasList;
 		this.dispatcher = dispatcher;
 		for (IaaSService iaas : iaasList) {
-			for (final PhysicalMachine pm : iaas.machines) {
-				// setting up the energy meters for every PM
-				PhysicalMachineEnergyMeter pmMeter = new PhysicalMachineEnergyMeter(
-						pm);
-				pmMeter.startMeter(interval, false);
-				meters.add(pmMeter);
-			}
+			IaaSEnergyMeter iaasMeter = new IaaSEnergyMeter(iaas);
+			iaasMeter.startMeter(interval, false);
+			meters.add(iaasMeter);
 		}
 		subscribe(300000); // 5 minutes in ms
 	}
@@ -149,7 +145,7 @@ class StateMonitor extends Timed {
 			// We now terminate
 			unsubscribe(); // first we cancel our future events
 			// then we cancel the future energy monitoring of all PMs
-			for (PhysicalMachineEnergyMeter em : meters) {
+			for (IaaSEnergyMeter em : meters) {
 				em.stopMeter();
 			}
 			try {
@@ -167,7 +163,7 @@ class StateMonitor extends Timed {
 					+ Calendar.getInstance().getTimeInMillis());
 			double sum = 0;
 			// finally we collect and aggregate the energy consumption data
-			for (PhysicalMachineEnergyMeter m : meters) {
+			for (IaaSEnergyMeter m : meters) {
 				sum += m.getTotalConsumption();
 			}
 			// Warning! assuming ms base.

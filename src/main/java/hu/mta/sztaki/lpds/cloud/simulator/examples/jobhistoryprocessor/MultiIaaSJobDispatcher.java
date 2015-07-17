@@ -29,9 +29,9 @@ import hu.mta.sztaki.lpds.cloud.simulator.helpers.job.JobListAnalyser;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GenericTraceProducer;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.UnalterableConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ConstantConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.io.VirtualAppliance;
@@ -190,8 +190,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 					final VirtualMachine[] vms = target.get(targetIndex)
 							.requestVM(
 									va,
-									UnalterableConstraints
-											.directUnalterableCreator(
+									new ConstantConstraints(
 													requestedprocs,
 													useThisProcPower,
 													isMinimumProcPower,

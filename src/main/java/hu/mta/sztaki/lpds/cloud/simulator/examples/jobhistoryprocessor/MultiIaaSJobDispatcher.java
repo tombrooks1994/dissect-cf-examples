@@ -32,7 +32,6 @@ import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ConstantConstraints;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.io.VirtualAppliance;
 
@@ -190,11 +189,9 @@ public class MultiIaaSJobDispatcher extends Timed {
 					final VirtualMachine[] vms = target.get(targetIndex)
 							.requestVM(
 									va,
-									new ConstantConstraints(
-													requestedprocs,
-													useThisProcPower,
-													isMinimumProcPower,
-													512000000),
+									new ConstantConstraints(requestedprocs,
+											useThisProcPower,
+											isMinimumProcPower, 512000000),
 									repo.get(targetIndex), requestedinstances);
 
 					// doing a round robin scheduling for the target
@@ -203,111 +200,18 @@ public class MultiIaaSJobDispatcher extends Timed {
 					if (targetIndex == target.size()) {
 						targetIndex = 0;
 					}
-
-					final ArrayList<Boolean> ignoreMarker = new ArrayList<Boolean>();
+					boolean servability = true;
 					for (final VirtualMachine vm : vms) {
-						// The received VM set (which supposed to run the ith
-						// job) is now processed
-						if (vm.getState().equals(
-								VirtualMachine.State.NONSERVABLE)) {
-							// the job is not servable because it would need
-							// more resources than the target cloud could offer
-							// in total.
-							ignorecounter++;
-							break;
-						}
-						// Ensuring we receive state dependent events about the
-						// new VMs
-						vm.subscribeStateChange(new VirtualMachine.StateChange() {
-							@Override
-							public void stateChanged(
-									VirtualMachine.State oldState,
-									VirtualMachine.State newState) {
-								// If the dispatching process was cancelled
-								if (isStopped) {
-									switch (newState) {
-									case NONSERVABLE:
-									case DESTROYED:
-									case INITIAL_TR:
-										// OK
-										break;
-									default:
-										try {
-											vm.destroy(true);
-										} catch (VMManager.VMManagementException ex) {
-											// Ignore as we want to get rid of
-											// the VM
-										}
-									}
-									return;
-								}
-
-								// If we can go further with the dispatching
-								// process
-								if (newState
-										.equals(VirtualMachine.State.NONSERVABLE)
-										&& ignoreMarker.isEmpty()) {
-									// Still some ignored VMs are detected.
-									ignorecounter++;
-									ignoreMarker.add(true);
-								}
-
-								// Now to the real business of having a VM that
-								// is actually capable of running the job
-								if (newState
-										.equals(VirtualMachine.State.RUNNING)) {
-									try {
-										// Mark that we start the job / no
-										// further queuing
-										toprocess.started();
-										// run the job's relevant part in the VM
-										vm.newComputeTask(
-												toprocess.getExectimeSecs()
-														* vm.getResourceAllocation().allocated
-																.getRequiredCPUs(),
-												ResourceConsumption.unlimitedProcessing,
-												new ResourceConsumption.ConsumptionEvent() {
-													/**
-													 * Event handler for the
-													 * completion of the job
-													 */
-													@Override
-													public void conComplete() {
-														// everything went
-														// smoothly we mark it
-														// in the job
-														toprocess.completed();
-														try {
-															// the VM is no
-															// longer needed
-															vm.destroy(false);
-															destroycounter++;
-														} catch (VMManager.VMManagementException e) {
-															System.err
-																	.println("VM could not be destroyed after compute task completes.");
-															e.printStackTrace();
-															System.exit(1);
-														}
-													}
-
-													@Override
-													public void conCancelled(
-															ResourceConsumption problematic) {
-														// just ignore this has
-														// happened :)
-
-														// In the current setup
-														// we are not supposed
-														// to have failing jobs
-													}
-												});
-									} catch (Exception e) {
-										e.printStackTrace();
-										System.exit(1);
-									}
-								}
-							}
-						});
+						// check if the job was not servable because it would
+						// have needed more resources than the target cloud
+						// could offer in total.
+						servability &= !vm.getState().equals(
+								VirtualMachine.State.NONSERVABLE);
+					}
+					if (servability) {
+						new SingleJobRunner(toprocess, vms, this);
+					} else {
+						ignorecounter++;
 					}
 				} catch (VMManager.VMManagementException e) {
 					// VM cannot be served because of too large resource request
@@ -362,6 +266,21 @@ public class MultiIaaSJobDispatcher extends Timed {
 	}
 
 	/**
+	 * Allows single job runners to let us know if they have completed the
+	 * execution of their job
+	 * 
+	 * @param finishedVMs
+	 *            the number of VMs that were actually used for the job
+	 */
+	void increaseDestroyCounter(final int finishedVMs) {
+		if (finishedVMs <= 0) {
+			throw new IllegalStateException(
+					"Tried to reduce the destroy counter!");
+		}
+		destroycounter += finishedVMs;
+	}
+
+	/**
 	 * Sets the processing power related requirements for the resource
 	 * allocation requests for all VMs.
 	 * 
@@ -383,5 +302,9 @@ public class MultiIaaSJobDispatcher extends Timed {
 	public void stopTraceProcessing() {
 		unsubscribe();
 		isStopped = true;
+	}
+
+	public boolean isStopped() {
+		return isStopped;
 	}
 }

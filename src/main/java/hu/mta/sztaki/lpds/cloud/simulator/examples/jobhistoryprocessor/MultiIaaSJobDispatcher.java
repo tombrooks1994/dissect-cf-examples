@@ -215,6 +215,8 @@ public class MultiIaaSJobDispatcher extends Timed {
 					}
 				} catch (VMManager.VMManagementException e) {
 					// VM cannot be served because of too large resource request
+					System.err.println("The oversized job's id: "
+							+ toprocess.getId() + " idx: " + i);
 					ignorecounter++;
 				} catch (Exception e) {
 					System.err.println("Unknown VM creation error: "

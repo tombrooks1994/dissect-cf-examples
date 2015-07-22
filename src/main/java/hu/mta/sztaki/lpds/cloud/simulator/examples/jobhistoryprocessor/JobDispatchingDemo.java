@@ -32,6 +32,8 @@ import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.RepetitiveRandomTraceGen
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.SWFReader;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.MultiPMController;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.SchedulingDependentMachines;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
@@ -154,7 +156,7 @@ public class JobDispatchingDemo {
 				HashMap<String, Integer> latencyMapMachine = new HashMap<String, Integer>(
 						numofNodes + 2);
 				IaaSService iaas = new IaaSService(FirstFitScheduler.class,
-						SchedulingDependentMachines.class);
+						AlwaysOnMachines.class);
 				final String repoid = clid + "VHStorageDell";
 				final String machineid = clid + "VHNode";
 

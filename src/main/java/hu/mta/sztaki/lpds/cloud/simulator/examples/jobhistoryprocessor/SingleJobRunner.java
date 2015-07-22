@@ -30,16 +30,14 @@ import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption
 
 import java.util.Arrays;
 
-public class SingleJobRunner implements VirtualMachine.StateChange,
-		ConsumptionEvent {
+public class SingleJobRunner implements VirtualMachine.StateChange, ConsumptionEvent {
 	private Job toProcess;
 	private VirtualMachine[] vmSet;
 	private final boolean[] readyness;
 	private MultiIaaSJobDispatcher parent;
 	private int completionCounter = 0;
 
-	public SingleJobRunner(final Job runMe, final VirtualMachine[] onUs,
-			MultiIaaSJobDispatcher forMe) {
+	public SingleJobRunner(final Job runMe, final VirtualMachine[] onUs, MultiIaaSJobDispatcher forMe) {
 		toProcess = runMe;
 		vmSet = onUs;
 		readyness = new boolean[vmSet.length];
@@ -49,11 +47,14 @@ public class SingleJobRunner implements VirtualMachine.StateChange,
 		for (int i = 0; i < vmSet.length; i++) {
 			vmSet[i].subscribeStateChange(this);
 		}
+		// Increasing ignorecounter in order to sign that the job in this runner
+		// is not yet finished (so the premature termination of the simulation
+		// will show the job ignored)
+		parent.ignorecounter++;
 	}
 
 	@Override
-	public void stateChanged(VirtualMachine vm, VirtualMachine.State oldState,
-			VirtualMachine.State newState) {
+	public void stateChanged(VirtualMachine vm, VirtualMachine.State oldState, VirtualMachine.State newState) {
 		// If the dispatching process was cancelled
 		if (parent.isStopped()) {
 			switch (newState) {
@@ -91,14 +92,12 @@ public class SingleJobRunner implements VirtualMachine.StateChange,
 					for (int i = 0; i < vmSet.length; i++) {
 						// run the job's relevant part in the VM
 						vm.newComputeTask(
-								toProcess.getExectimeSecs()
-										* vm.getResourceAllocation().allocated
-												.getRequiredCPUs(),
+								toProcess.getExectimeSecs() * vm.getResourceAllocation().allocated.getRequiredCPUs(),
 								ResourceConsumption.unlimitedProcessing, this);
 					}
 				} catch (Exception e) {
-					System.err
-							.println("Unexpected network setup issues while trying to send a new compute task to one of the VMs supporting job processing");
+					System.err.println(
+							"Unexpected network setup issues while trying to send a new compute task to one of the VMs supporting job processing");
 					e.printStackTrace();
 					System.exit(1);
 				}
@@ -123,13 +122,12 @@ public class SingleJobRunner implements VirtualMachine.StateChange,
 					vmSet[i] = null;
 				}
 			} catch (VMManager.VMManagementException e) {
-				System.err
-						.println("VM could not be destroyed after job completion.");
+				System.err.println("VM could not be destroyed after job completion.");
 				e.printStackTrace();
 				System.exit(1);
 			}
 			parent.increaseDestroyCounter(completionCounter);
-
+			parent.ignorecounter--;
 		}
 	}
 

@@ -23,6 +23,13 @@
  */
 package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GWFReader;
@@ -32,20 +39,13 @@ import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.RepetitiveRandomTraceGen
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.SWFReader;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.MultiPMController;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.PhysicalMachineController;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.SchedulingDependentMachines;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.Scheduler;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.util.CloudLoader;
 import hu.mta.sztaki.lpds.cloud.simulator.util.PowerTransitionGenerator;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * This command line program sets up one or more cloud infrastructures, sends a
@@ -55,68 +55,59 @@ import java.util.List;
  * etc. It's help - which is printed out when it receives no command line
  * arguments - provides insights on the parametrization.
  * 
- * This class was used to provide the input for Figures 14-17 in the article:<br>
+ * This class was used to provide the input for Figures 14-17 in the article:
+ * <br>
  * <i>Gabor Kecskemeti:
  * "DISSECT-CF: a simulator to foster energy-aware scheduling in infrastructure clouds"
  * . In Simulation Modeling Practice and Theory, 2015, to Appear.<i> *
  * 
- * @author 
- *         "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems, MTA SZTAKI (c) 2012-5"
+ * @author "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems, MTA SZTAKI (c) 2012-5"
  */
 public class JobDispatchingDemo {
 
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws Exception {
 		// The help
 		if (args.length < 2) {
 			System.out.println("Expected parameters:");
 			System.out.println("1. job trace:");
-			System.out
-					.println("1A) if a grid workload archive file is used as an input then give its full path here");
-			System.out
-					.println("1B) if a synthetic trace is used then specify its properties here as follows (items should be separated with a dash):");
-			System.out
-					.println("1Ba) Maximum number of jobs that exist in parallel");
-			System.out
-					.println("1Bb) The amount of seconds the job startup times should be spread uniformely in a parallel batch");
+			System.out.println("1A) if a grid workload archive file is used as an input then give its full path here");
+			System.out.println(
+					"1B) if a synthetic trace is used then specify its properties here as follows (items should be separated with a dash):");
+			System.out.println("1Ba) Maximum number of jobs that exist in parallel");
+			System.out.println(
+					"1Bb) The amount of seconds the job startup times should be spread uniformely in a parallel batch");
 			System.out.println("1Bc) Minimum execution time of a single job");
 			System.out.println("1Bd) Maximum execution time of a single job");
-			System.out
-					.println("1Be) Minimum gap between the last and the first job submission of two consequitve parallel batches");
-			System.out
-					.println("1Bf) Maximum gap between the last and the first job submission of two consequitve parallel batches");
-			System.out
-					.println("1Bg) Minimum number of processors for a single job");
-			System.out
-					.println("1Bh) Maximum number of processors for a single job");
-			System.out
-					.println("1Bi) Total number of processors usable by all parallel jobs");
+			System.out.println(
+					"1Be) Minimum gap between the last and the first job submission of two consequitve parallel batches");
+			System.out.println(
+					"1Bf) Maximum gap between the last and the first job submission of two consequitve parallel batches");
+			System.out.println("1Bg) Minimum number of processors for a single job");
+			System.out.println("1Bh) Maximum number of processors for a single job");
+			System.out.println("1Bi) Total number of processors usable by all parallel jobs");
 			System.out.println("1B - example) 2/10/10/90/200/200/1/2/4");
 			System.out.println("2. Jobs and monitoring:");
-			System.out
-					.println("2A) (optional) if the first charachter of the second parameter is a + then the monitoring is switched off (no converted trace files will be written)");
-			System.out
-					.println("2B) A range of jobs from the above mentioned trace, if a single number is given then the range is assumed to be starting from 0");
+			System.out.println(
+					"2A) (optional) if the first charachter of the second parameter is a + then the monitoring is switched off (no converted trace files will be written)");
+			System.out.println(
+					"2B) A range of jobs from the above mentioned trace, if a single number is given then the range is assumed to be starting from 0");
 			System.out.println("2 - example) +10-20");
 			System.out.println("3. Cloud definition");
-			System.out
-					.println("3A) one either gives a full path to the description of the cloud to be used");
-			System.out
-					.println("3B) or it is possible to specify a the number of hosts and"
-							+ "the number of cpus in a host and the number of clouds these"
-							+ "hosts should be spread out with the following format:");
+			System.out.println("3A) one either gives a full path to the description of the cloud to be used");
+			System.out.println("3B) or it is possible to specify a the number of hosts and"
+					+ "the number of cpus in a host and the number of clouds these"
+					+ "hosts should be spread out with the following format:");
 			System.out.println("3Bi) - number of cpu nodes");
-			System.out
-					.println("3Bii) - number of cpu cores per node separated with an @");
+			System.out.println("3Bii) - number of cpu cores per node separated with an @");
 			System.out
 					.println("3Biii) - number of IaaS services the nodes should be split equally separated with an @");
-			System.out
-					.println("\t Note: if no @ is present in this parameter then the cpu cores are assumed to be 64/node");
-			System.out
-					.println("3B - example 1) 500@16 (for 500 pms with 16 cores each");
-			System.out
-					.println("3B - example 2) 5000@16@5 (for 1000 pms with 16 cores each in 5 clouds");
-			System.out
-					.println("4. energy monitoring polling frequency (only needed when the second parameter does not start with +)");
+			System.out.println(
+					"\t Note: if no @ is present in this parameter then the cpu cores are assumed to be 64/node");
+			System.out.println("3B - example 1) 500@16 (for 500 pms with 16 cores each");
+			System.out.println("3B - example 2) 5000@16@5 (for 1000 pms with 16 cores each in 5 clouds");
+			System.out.println(
+					"4. energy monitoring polling frequency (only needed when the second parameter does not start with +)");
 			System.out.println("4 - example) 5000");
 			System.exit(0);
 		}
@@ -133,30 +124,49 @@ public class JobDispatchingDemo {
 			int numofClouds = 1;
 			// Parsing the 3rd argument.
 			String[] hostSpec = args[2].split("@");
+			Class<? extends Scheduler> vmSched = FirstFitScheduler.class;
+			Class<? extends PhysicalMachineController> pmSched = SchedulingDependentMachines.class;
 			if (hostSpec.length > 3) {
-				throw new IllegalStateException("Host specification string '"
-						+ args[2] + "' is incorrect:");
+				throw new IllegalStateException("Host specification string '" + args[2] + "' is incorrect:");
 			}
 			int totNumofNodes = Integer.parseInt(hostSpec[0]);
 			if (hostSpec.length >= 2) {
 				numofCores = Integer.parseInt(hostSpec[1]);
 			}
 			if (hostSpec.length == 3) {
-				numofClouds = Integer.parseInt(hostSpec[2]);
+				String[] cloudSpec = hostSpec[2].split(":");
+				numofClouds = Integer.parseInt(cloudSpec[0]);
+				if (cloudSpec.length > 1) {
+					@SuppressWarnings("rawtypes")
+					Class trial = Class.forName(cloudSpec[1]);
+					if (Scheduler.class.isAssignableFrom(trial)) {
+						vmSched = trial;
+					} else {
+						throw new IllegalStateException(
+								"The VM Scheduler specified in the parameters is not a subclass of Scheduler");
+					}
+					trial = Class.forName(cloudSpec[2]);
+					if (PhysicalMachineController.class.isAssignableFrom(trial)) {
+						pmSched = trial;
+					} else {
+						throw new IllegalStateException(
+								"The PM Scheduler specified in the parameters is not a subclass of PhysicalMachineController");
+					}
+				}
+
 			}
+			System.err.println(
+					"Using schedulers: " + vmSched.getName() + " for VMs and " + pmSched.getName() + " for PMs");
 			// Creating the each cloud requested
 			for (int clid = 0; clid < numofClouds; clid++) {
 				int numofNodes = totNumofNodes / numofClouds;
-				System.err.println("Scaling datacenter to " + numofNodes
-						+ " nodes with " + numofCores + " cpu cores each");
+				System.err.println(
+						"Scaling datacenter to " + numofNodes + " nodes with " + numofCores + " cpu cores each");
 				// Default constructs
 
-				HashMap<String, Integer> latencyMapRepo = new HashMap<String, Integer>(
-						numofNodes + 2);
-				HashMap<String, Integer> latencyMapMachine = new HashMap<String, Integer>(
-						numofNodes + 2);
-				IaaSService iaas = new IaaSService(FirstFitScheduler.class,
-						AlwaysOnMachines.class);
+				HashMap<String, Integer> latencyMapRepo = new HashMap<String, Integer>(numofNodes + 2);
+				HashMap<String, Integer> latencyMapMachine = new HashMap<String, Integer>(numofNodes + 2);
+				IaaSService iaas = new IaaSService(vmSched, pmSched);
 				final String repoid = clid + "VHStorageDell";
 				final String machineid = clid + "VHNode";
 
@@ -165,9 +175,8 @@ public class JobDispatchingDemo {
 				// scaling the bandwidth accroding to the size of the cloud
 				final double bwRatio = (numofCores * numofNodes) / (7f * 64f);
 				// A single repo will hold 36T of data
-				iaas.registerRepository(new Repository(36000000000000l, repoid,
-						(long) (bwRatio * 1250000), (long) (bwRatio * 1250000),
-						(long) (bwRatio * 250000), latencyMapRepo));
+				iaas.registerRepository(new Repository(36000000000000l, repoid, (long) (bwRatio * 1250000),
+						(long) (bwRatio * 1250000), (long) (bwRatio * 250000), latencyMapRepo));
 				latencyMapMachine.put(repoid, 5); // 5 ms latency towards the
 													// repos
 
@@ -176,18 +185,14 @@ public class JobDispatchingDemo {
 				// Specification of the default power behavior in PMs
 				final EnumMap<PhysicalMachine.PowerStateKind, EnumMap<PhysicalMachine.State, PowerState>> transitions = PowerTransitionGenerator
 						.generateTransitions(20, 296, 493, 50, 108);
-				ArrayList<PhysicalMachine> completePMList = new ArrayList<PhysicalMachine>(
-						numofNodes);
+				ArrayList<PhysicalMachine> completePMList = new ArrayList<PhysicalMachine>(numofNodes);
 				for (int i = 1; i <= numofNodes; i++) {
 					String currid = machineid + i;
 					final double pmBWRatio = Math.max(numofCores / 7f, 1);
-					PhysicalMachine pm = new PhysicalMachine(numofCores, 0.001,
-							256000000000l, new Repository(5000000000000l,
-									currid, (long) (pmBWRatio * 250000),
-									(long) (pmBWRatio * 250000),
-									(long) (pmBWRatio * 50000),
-									latencyMapMachine), 89000, 29000,
-							transitions);
+					PhysicalMachine pm = new PhysicalMachine(numofCores, 0.001, 256000000000l,
+							new Repository(5000000000000l, currid, (long) (pmBWRatio * 250000),
+									(long) (pmBWRatio * 250000), (long) (pmBWRatio * 50000), latencyMapMachine),
+							89000, 29000, transitions);
 					latencyMapRepo.put(currid, 5);
 					latencyMapMachine.put(currid, 3);
 					completePMList.add(pm);
@@ -218,17 +223,14 @@ public class JobDispatchingDemo {
 		if (new File(args[0]).exists()) {
 			// The trace comes from a file, we need to see what kind to pick the
 			// right loader
-			producer = args[0].endsWith(".gwf") ? new GWFReader(args[0], from,
-					to, false, DCFJob.class)
-					: (args[0].endsWith(".swf") ? new SWFReader(args[0], from,
-							to, false, DCFJob.class) : new One2HistoryReader(
-							args[0], from, to, false, DCFJob.class));
+			producer = args[0].endsWith(".gwf") ? new GWFReader(args[0], from, to, false, DCFJob.class)
+					: (args[0].endsWith(".swf") ? new SWFReader(args[0], from, to, false, DCFJob.class)
+							: new One2HistoryReader(args[0], from, to, false, DCFJob.class));
 		} else {
 			// The trace comes in the form of generic random trace
 			// characteristics.
 			String[] params = args[0].split("/");
-			RepetitiveRandomTraceGenerator trgen = new RepetitiveRandomTraceGenerator(
-					DCFJob.class);
+			RepetitiveRandomTraceGenerator trgen = new RepetitiveRandomTraceGenerator(DCFJob.class);
 			producer = trgen;
 			trgen.setJobNum(to - from);
 			trgen.setParallel(Integer.parseInt(params[0]));
@@ -243,14 +245,12 @@ public class JobDispatchingDemo {
 		}
 
 		// Preparing for sending the jobs to the clouds with the dispatcher
-		MultiIaaSJobDispatcher dispatcher = new MultiIaaSJobDispatcher(
-				producer, iaasList);
+		MultiIaaSJobDispatcher dispatcher = new MultiIaaSJobDispatcher(producer, iaasList);
 		if (args.length > (doMonitoring ? 4 : 3)) {
 			Thread.sleep(50000);
 		}
 		long beforeSimu = Calendar.getInstance().getTimeInMillis();
-		System.err.println("Job dispatcher is completely prepared at "
-				+ beforeSimu);
+		System.err.println("Job dispatcher is completely prepared at " + beforeSimu);
 		// Moving the simulator's time just before the first event would come
 		// from the dispatcher
 		Timed.skipEventsTill(dispatcher.getMinsubmittime() * 1000);
@@ -259,8 +259,7 @@ public class JobDispatchingDemo {
 			// Final monitoring related CLI arguments parsing
 			final int interval = Integer.parseInt(args[3]);
 			if (interval == 0) {
-				System.err
-						.println("ERROR: Improperly specified energy consumption monitoring interval!");
+				System.err.println("ERROR: Improperly specified energy consumption monitoring interval!");
 				System.exit(1);
 			}
 			// Creation of the state monitor object (it will register and
@@ -278,14 +277,10 @@ public class JobDispatchingDemo {
 		long duration = afterSimu - beforeSimu;
 
 		// Printing out generic timing and performance statistics:
-		System.err.println("Simulation terminated " + afterSimu + " (took "
-				+ duration + "ms in realtime)");
+		System.err.println("Simulation terminated " + afterSimu + " (took " + duration + "ms in realtime)");
 		System.err.println("Current simulation time: " + Timed.getFireCount());
-		System.err
-				.println("Simulated timespan: "
-						+ (Timed.getFireCount() - dispatcher.getMinsubmittime() * 1000));
-		System.err.println("Final number of: Ignored jobs - "
-				+ dispatcher.getIgnorecounter() + " Destroyed VMs - "
+		System.err.println("Simulated timespan: " + (Timed.getFireCount() - dispatcher.getMinsubmittime() * 1000));
+		System.err.println("Final number of: Ignored jobs - " + dispatcher.getIgnorecounter() + " Destroyed VMs - "
 				+ dispatcher.getDestroycounter());
 		long vmcount = 0;
 		for (IaaSService lociaas : iaasList) {
@@ -293,7 +288,6 @@ public class JobDispatchingDemo {
 				vmcount += pm.getCompletedVMs();
 			}
 		}
-		System.err.println("Performance: " + (((double) vmcount) / duration)
-				+ " VMs/ms ");
+		System.err.println("Performance: " + (((double) vmcount) / duration) + " VMs/ms ");
 	}
 }

@@ -48,8 +48,7 @@ import java.util.List;
  * VMIs for the VMs are assumed to be capable of running all the jobs in the
  * trace.
  * 
- * @author 
- *         "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems, MTA SZTAKI (c) 2012-5"
+ * @author "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems, MTA SZTAKI (c) 2012-5"
  */
 public class MultiIaaSJobDispatcher extends Timed {
 
@@ -127,8 +126,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 	 * @param target
 	 *            the iaas systems to be used for submitting the trace to
 	 */
-	public MultiIaaSJobDispatcher(GenericTraceProducer producer,
-			List<IaaSService> target) {
+	public MultiIaaSJobDispatcher(GenericTraceProducer producer, List<IaaSService> target) {
 		this.target = target;
 		// Collecting the jobs
 		List<Job> jobs = producer.getAllJobs();
@@ -179,20 +177,14 @@ public class MultiIaaSJobDispatcher extends Timed {
 				// following set of VMs with the following number of CPUs
 				final int requestedinstances = maxmachinecores >= toprocess.nprocs ? 1
 						: (toprocess.nprocs / ((int) maxmachinecores))
-								+ ((toprocess.nprocs % (int) maxmachinecores) == 0 ? 0
-										: 1);
-				final double requestedprocs = (double) toprocess.nprocs
-						/ requestedinstances;
+								+ ((toprocess.nprocs % (int) maxmachinecores) == 0 ? 0 : 1);
+				final double requestedprocs = (double) toprocess.nprocs / requestedinstances;
 
 				// Starting the VM for the job
 				try {
-					final VirtualMachine[] vms = target.get(targetIndex)
-							.requestVM(
-									va,
-									new ConstantConstraints(requestedprocs,
-											useThisProcPower,
-											isMinimumProcPower, 512000000),
-									repo.get(targetIndex), requestedinstances);
+					final VirtualMachine[] vms = target.get(targetIndex).requestVM(va,
+							new ConstantConstraints(requestedprocs, useThisProcPower, isMinimumProcPower, 512000000),
+							repo.get(targetIndex), requestedinstances);
 
 					// doing a round robin scheduling for the target
 					// infrastructures
@@ -205,8 +197,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 						// check if the job was not servable because it would
 						// have needed more resources than the target cloud
 						// could offer in total.
-						servability &= !vm.getState().equals(
-								VirtualMachine.State.NONSERVABLE);
+						servability &= !vm.getState().equals(VirtualMachine.State.NONSERVABLE);
 					}
 					if (servability) {
 						new SingleJobRunner(toprocess, vms, this);
@@ -215,12 +206,12 @@ public class MultiIaaSJobDispatcher extends Timed {
 					}
 				} catch (VMManager.VMManagementException e) {
 					// VM cannot be served because of too large resource request
-					System.err.println("The oversized job's id: "
-							+ toprocess.getId() + " idx: " + i);
+					if (System.getProperty("hu.mta.sztaki.lpds.cloud.simulator.examples.verbosity") != null) {
+						System.err.println("The oversized job's id: " + toprocess.getId() + " idx: " + i);
+					}
 					ignorecounter++;
 				} catch (Exception e) {
-					System.err.println("Unknown VM creation error: "
-							+ e.getMessage());
+					System.err.println("Unknown VM creation error: " + e.getMessage());
 					e.printStackTrace();
 					ignorecounter++;
 				}
@@ -276,8 +267,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 	 */
 	void increaseDestroyCounter(final int finishedVMs) {
 		if (finishedVMs <= 0) {
-			throw new IllegalStateException(
-					"Tried to reduce the destroy counter!");
+			throw new IllegalStateException("Tried to reduce the destroy counter!");
 		}
 		destroycounter += finishedVMs;
 	}
@@ -291,8 +281,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 	 * @param minimum
 	 *            is it the minimum required or the total you want to specify
 	 */
-	public void setUsableProcPower(final double usableProcPower,
-			final boolean minimum) {
+	public void setUsableProcPower(final double usableProcPower, final boolean minimum) {
 		this.useThisProcPower = usableProcPower;
 		isMinimumProcPower = minimum;
 	}

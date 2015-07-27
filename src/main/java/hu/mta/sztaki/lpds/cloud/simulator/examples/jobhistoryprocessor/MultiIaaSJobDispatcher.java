@@ -158,7 +158,18 @@ public class MultiIaaSJobDispatcher extends Timed {
 
 		// Ensuring we will receive a notification once the first job should be
 		// submitted
-		subscribe(minsubmittime * 1000 - Timed.getFireCount());
+
+		final long currentTime = Timed.getFireCount();
+		final long msTime=minsubmittime*1000;
+		if (currentTime > msTime) {
+			final long adjustTime = (long) Math.ceil((currentTime - msTime) / 1000f);
+			minsubmittime += adjustTime;
+			for (Job job : this.jobs) {
+				job.adjust(adjustTime);
+			}
+		}
+
+		subscribe(minsubmittime * 1000 - currentTime);
 	}
 
 	/**

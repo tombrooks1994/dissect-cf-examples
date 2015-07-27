@@ -203,6 +203,9 @@ public class JobDispatchingDemo {
 				iaasList.add(iaas);
 			}
 		}
+		// Wait until the PM Controllers finish their initial activities
+		Timed.simulateUntilLastEvent();
+		
 		// Further processing of the CLI arguments
 		boolean doMonitoring = !args[1].startsWith("+");
 		if (!doMonitoring) {

@@ -91,8 +91,8 @@ public class SingleJobRunner implements VirtualMachine.StateChange, ConsumptionE
 				try {
 					for (int i = 0; i < vmSet.length; i++) {
 						// run the job's relevant part in the VM
-						vm.newComputeTask(
-								toProcess.getExectimeSecs() * vm.getResourceAllocation().allocated.getRequiredCPUs(),
+						vmSet[i].newComputeTask(
+								toProcess.getExectimeSecs() * vmSet[i].getResourceAllocation().allocated.getRequiredCPUs(),
 								ResourceConsumption.unlimitedProcessing, this);
 					}
 				} catch (Exception e) {

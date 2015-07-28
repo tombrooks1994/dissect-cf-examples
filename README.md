@@ -44,4 +44,6 @@ Please note that all these examples are provided as simple samples and not inted
 
 ## Remarks
 
+For a more complex example one can have a look at [the GroudSim-DISSECT-CF integration](http://www.dps.uibk.ac.at/projects/groudsim/).
+
 ##### Warning: the master branch of the examples is intended as a development branch, and might not contain a functional version!

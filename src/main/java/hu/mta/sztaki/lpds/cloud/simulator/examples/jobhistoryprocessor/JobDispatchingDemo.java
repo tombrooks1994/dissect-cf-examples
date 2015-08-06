@@ -162,6 +162,9 @@ public class JobDispatchingDemo {
 				int numofNodes = totNumofNodes / numofClouds;
 				System.err.println(
 						"Scaling datacenter to " + numofNodes + " nodes with " + numofCores + " cpu cores each");
+				if(numofNodes*numofClouds!=totNumofNodes) {
+					System.err.println("WARNING: with equally sized clouds we cannot reach the total number of nodes specified!");
+				}
 				// Default constructs
 
 				HashMap<String, Integer> latencyMapRepo = new HashMap<String, Integer>(numofNodes + 2);

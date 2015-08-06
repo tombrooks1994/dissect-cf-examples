@@ -28,20 +28,16 @@ import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption.ConsumptionEvent;
 
-import java.util.Arrays;
-
 public class SingleJobRunner implements VirtualMachine.StateChange, ConsumptionEvent {
 	private Job toProcess;
 	private VirtualMachine[] vmSet;
-	private final boolean[] readyness;
 	private MultiIaaSJobDispatcher parent;
+	private int readyVMCounter = 0;
 	private int completionCounter = 0;
 
 	public SingleJobRunner(final Job runMe, final VirtualMachine[] onUs, MultiIaaSJobDispatcher forMe) {
 		toProcess = runMe;
 		vmSet = onUs;
-		readyness = new boolean[vmSet.length];
-		Arrays.fill(readyness, false);
 		parent = forMe;
 		// Ensuring we receive state dependent events about the new VMs
 		for (int i = 0; i < vmSet.length; i++) {
@@ -68,31 +64,26 @@ public class SingleJobRunner implements VirtualMachine.StateChange, ConsumptionE
 					vm.unsubscribeStateChange(this);
 					vm.destroy(true);
 				} catch (VMManager.VMManagementException ex) {
-					// Ignore as we want to get rid of
-					// the VM
+					// Ignore as we want to get rid of the VM
 				}
 			}
 			return;
 		}
 
-		// Now to the real business of having a VM that
-		// is actually capable of running the job
+		// Now to the real business of having a VM that is actually capable of
+		// running the job
 		if (newState.equals(VirtualMachine.State.RUNNING)) {
 			// Ensures that jobs inteded for parallel execution are really run
 			// in parallel
-			boolean allVMsReady = true;
-			for (int i = 0; i < vmSet.length; i++) {
-				allVMsReady &= (readyness[i] |= vmSet[i] == vm);
-			}
-			if (allVMsReady) {
-				// Mark that we start the job / no
-				// further queuing
+			if (++readyVMCounter == vmSet.length) {
+				// Mark that we start the job / no further queuing
 				toProcess.started();
 				try {
 					for (int i = 0; i < vmSet.length; i++) {
 						// run the job's relevant part in the VM
 						vmSet[i].newComputeTask(
-								toProcess.getExectimeSecs() * vmSet[i].getResourceAllocation().allocated.getRequiredCPUs(),
+								toProcess.getExectimeSecs()
+										* vmSet[i].getResourceAllocation().allocated.getRequiredCPUs(),
 								ResourceConsumption.unlimitedProcessing, this);
 					}
 				} catch (Exception e) {

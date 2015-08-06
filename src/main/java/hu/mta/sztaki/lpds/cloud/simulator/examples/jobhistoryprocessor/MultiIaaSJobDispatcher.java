@@ -30,6 +30,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GenericTraceProducer;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager.VMManagementException;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ConstantConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
@@ -82,9 +83,13 @@ public class MultiIaaSJobDispatcher extends Timed {
 	 */
 	protected long minsubmittime;
 	/**
-	 * maximum number of physical machines
+	 * maximum number of cores in the biggest physical machine
 	 */
 	protected long maxmachinecores = 0;
+	/**
+	 * maximum number of physical machines
+	 */
+	protected long maxIaaSmachines = 0;
 	/**
 	 * number of jobs ignored
 	 */
@@ -154,13 +159,16 @@ public class MultiIaaSJobDispatcher extends Timed {
 					maxmachinecores = (long) cores;
 				}
 			}
+			if (iaas.machines.size() > maxIaaSmachines) {
+				maxIaaSmachines = iaas.machines.size();
+			}
 		}
 
 		// Ensuring we will receive a notification once the first job should be
 		// submitted
 
 		final long currentTime = Timed.getFireCount();
-		final long msTime=minsubmittime*1000;
+		final long msTime = minsubmittime * 1000;
 		if (currentTime > msTime) {
 			final long adjustTime = (long) Math.ceil((currentTime - msTime) / 1000f);
 			minsubmittime += adjustTime;
@@ -186,44 +194,76 @@ public class MultiIaaSJobDispatcher extends Timed {
 
 				// to fulfill the ith job's cpu core requirements we need the
 				// following set of VMs with the following number of CPUs
-				final int requestedinstances = maxmachinecores >= toprocess.nprocs ? 1
+				final int requestedTotalInstances = maxmachinecores >= toprocess.nprocs ? 1
 						: (toprocess.nprocs / ((int) maxmachinecores))
 								+ ((toprocess.nprocs % (int) maxmachinecores) == 0 ? 0 : 1);
-				final double requestedprocs = (double) toprocess.nprocs / requestedinstances;
+				final double requestedprocs = (double) toprocess.nprocs / requestedTotalInstances;
+				// For simplicity, here we have an assumption that our clouds are uniform...
+				final int requestedClouds = (int) Math.ceil(requestedTotalInstances > maxIaaSmachines
+						? (double) requestedTotalInstances / maxIaaSmachines : 1);
+				final int uniformSpread = requestedTotalInstances / requestedClouds;
+				int remainder = requestedTotalInstances % requestedClouds;
+				int vmpointer = 0;
+				VirtualMachine[] vms = new VirtualMachine[requestedTotalInstances];
+				int[] targetIndexes = new int[requestedTotalInstances];
 
-				// Starting the VM for the job
-				try {
-					final VirtualMachine[] vms = target.get(targetIndex).requestVM(va,
-							new ConstantConstraints(requestedprocs, useThisProcPower, isMinimumProcPower, 512000000),
-							repo.get(targetIndex), requestedinstances);
+				for (int j = 0; j < requestedClouds; j++) {
+					final int expectedSpread = uniformSpread + remainder;
+					final int currentRequestSize = (int) Math.min(maxIaaSmachines, expectedSpread);
+					remainder = expectedSpread - currentRequestSize;
+					// Starting the VMs for the job
+					try {
+						final VirtualMachine[] vmsTemp = target.get(targetIndex)
+								.requestVM(
+										va, new ConstantConstraints(requestedprocs, useThisProcPower,
+												isMinimumProcPower, 512000000),
+										repo.get(targetIndex), currentRequestSize);
+						System.arraycopy(vmsTemp, 0, vms, vmpointer, vmsTemp.length);
+						for (int k = vmpointer + vmsTemp.length - 1; k >= vmpointer; k--) {
+							targetIndexes[k] = targetIndex;
+						}
+						vmpointer += vmsTemp.length;
 
-					// doing a round robin scheduling for the target
-					// infrastructures
-					targetIndex++;
-					if (targetIndex == target.size()) {
-						targetIndex = 0;
-					}
-					boolean servability = true;
-					for (final VirtualMachine vm : vms) {
-						// check if the job was not servable because it would
-						// have needed more resources than the target cloud
-						// could offer in total.
-						servability &= !vm.getState().equals(VirtualMachine.State.NONSERVABLE);
-					}
-					if (servability) {
-						new SingleJobRunner(toprocess, vms, this);
-					} else {
+						// doing a round robin scheduling for the target
+						// infrastructures
+						targetIndex++;
+						if (targetIndex == target.size()) {
+							targetIndex = 0;
+						}
+					} catch (VMManager.VMManagementException e) {
+						// VM cannot be served because of too large resource
+						// request
+						if (System.getProperty("hu.mta.sztaki.lpds.cloud.simulator.examples.verbosity") != null) {
+							System.err.println("The oversized job's id: " + toprocess.getId() + " idx: " + i);
+						}
+						ignorecounter++;
+					} catch (Exception e) {
+						System.err.println("Unknown VM creation error: " + e.getMessage());
+						e.printStackTrace();
 						ignorecounter++;
 					}
-				} catch (VMManager.VMManagementException e) {
-					// VM cannot be served because of too large resource request
-					if (System.getProperty("hu.mta.sztaki.lpds.cloud.simulator.examples.verbosity") != null) {
-						System.err.println("The oversized job's id: " + toprocess.getId() + " idx: " + i);
+				}
+				boolean servability = true;
+				for (int j = 0; j < vms.length && servability; j++) {
+					// check if the job was not servable because it would have
+					// needed more resources than the target clouds could offer
+					// in total.
+					servability &= !vms[j].getState().equals(VirtualMachine.State.NONSERVABLE);
+				}
+				if (servability) {
+					new SingleJobRunner(toprocess, vms, this);
+				} else {
+					for (int j = 0; j < vms.length; j++) {
+						if (!vms[j].getState().equals(VirtualMachine.State.NONSERVABLE)) {
+							try {
+								target.get(targetIndexes[j]).terminateVM(vms[j], true);
+							} catch (VMManager.NoSuchVMException e) {
+								// ignore
+							} catch (VMManagementException e) {
+								// ignore 2
+							}
+						}
 					}
-					ignorecounter++;
-				} catch (Exception e) {
-					System.err.println("Unknown VM creation error: " + e.getMessage());
-					e.printStackTrace();
 					ignorecounter++;
 				}
 				minindex = i + 1;

@@ -141,7 +141,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 		// Analyzing the jobs for min and max submission time
 		minsubmittime = JobListAnalyser.getEarliestSubmissionTime(jobs);
 		// Transforming the job list for rapid access arrays:
-		this.jobs = jobs.toArray(new Job[0]);
+		this.jobs = jobs.toArray(new Job[jobs.size()]);
 		jobs.clear();
 
 		// Preparing the repositories with VAs

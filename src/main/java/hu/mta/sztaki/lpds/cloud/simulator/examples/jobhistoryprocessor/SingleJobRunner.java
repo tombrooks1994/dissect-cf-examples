@@ -50,7 +50,8 @@ public class SingleJobRunner implements VirtualMachine.StateChange, ConsumptionE
 	}
 
 	@Override
-	public void stateChanged(VirtualMachine vm, VirtualMachine.State oldState, VirtualMachine.State newState) {
+	public void stateChanged(final VirtualMachine vm, final VirtualMachine.State oldState,
+			final VirtualMachine.State newState) {
 		// If the dispatching process was cancelled
 		if (parent.isStopped()) {
 			switch (newState) {
@@ -119,6 +120,9 @@ public class SingleJobRunner implements VirtualMachine.StateChange, ConsumptionE
 			}
 			parent.increaseDestroyCounter(completionCounter);
 			parent.ignorecounter--;
+			parent = null;
+			vmSet = null;
+			toProcess = null;
 		}
 	}
 

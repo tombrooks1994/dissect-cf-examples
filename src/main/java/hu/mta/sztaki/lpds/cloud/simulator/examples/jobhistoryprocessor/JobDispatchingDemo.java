@@ -32,11 +32,11 @@ import java.util.List;
 
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GWFReader;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.file.GWFReader;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GenericTraceProducer;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.One2HistoryReader;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.RepetitiveRandomTraceGenerator;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.SWFReader;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.file.One2HistoryReader;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.random.RepetitiveRandomTraceGenerator;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.file.SWFReader;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.PhysicalMachineController;

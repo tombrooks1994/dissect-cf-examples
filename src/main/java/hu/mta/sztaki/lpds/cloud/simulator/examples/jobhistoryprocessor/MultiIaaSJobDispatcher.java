@@ -27,6 +27,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.job.Job;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.job.JobListAnalyser;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GenericTraceProducer;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.TraceManagementException;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager;
@@ -131,7 +132,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 	 * @param target
 	 *            the iaas systems to be used for submitting the trace to
 	 */
-	public MultiIaaSJobDispatcher(GenericTraceProducer producer, List<IaaSService> target) {
+	public MultiIaaSJobDispatcher(GenericTraceProducer producer, List<IaaSService> target) throws TraceManagementException {
 		this.target = target;
 		// Collecting the jobs
 		List<Job> jobs = producer.getAllJobs();

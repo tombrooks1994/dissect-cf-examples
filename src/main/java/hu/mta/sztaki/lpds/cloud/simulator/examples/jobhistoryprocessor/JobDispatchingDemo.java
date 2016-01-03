@@ -32,11 +32,13 @@ import java.util.List;
 
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.file.GWFReader;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.FileBasedTraceProducerFactory;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GenericTraceProducer;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.file.One2HistoryReader;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.RunningAtaGivenTime;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.TraceFilter;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.TraceFilter.Acceptor;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.random.GenericRandomTraceGenerator;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.random.RepetitiveRandomTraceGenerator;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.file.SWFReader;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.PhysicalMachineController;
@@ -71,7 +73,8 @@ public class JobDispatchingDemo {
 		if (args.length < 2) {
 			System.out.println("Expected parameters:");
 			System.out.println("1. job trace:");
-			System.out.println("1A) if a grid workload archive file is used as an input then give its full path here");
+			System.out.println(
+					"1A) if a workload specification (e.g. gwf,swf, srtg) file is used as an input then give its full path here");
 			System.out.println(
 					"1B) if a synthetic trace is used then specify its properties here as follows (items should be separated with a dash):");
 			System.out.println("1Ba) Maximum number of jobs that exist in parallel");
@@ -92,7 +95,9 @@ public class JobDispatchingDemo {
 					"2A) (optional) if the first charachter of the second parameter is a + then the monitoring is switched off (no converted trace files will be written)");
 			System.out.println(
 					"2B) A range of jobs from the above mentioned trace, if a single number is given then the range is assumed to be starting from 0");
-			System.out.println("2 - example) +10-20");
+			System.out.println(
+					"2C) (optional) if the range is followed by an '@', then one can specify to filter the jobs from the above range so they are all supposed to be running at a specific time instance (the time instance is given after the '@' character)");
+			System.out.println("2 - example) +10-20@10000");
 			System.out.println("3. Cloud definition");
 			System.out.println("3A) one either gives a full path to the description of the cloud to be used");
 			System.out.println("3B) or it is possible to specify a the number of hosts and"
@@ -162,8 +167,9 @@ public class JobDispatchingDemo {
 				int numofNodes = totNumofNodes / numofClouds;
 				System.err.println(
 						"Scaling datacenter to " + numofNodes + " nodes with " + numofCores + " cpu cores each");
-				if(numofNodes*numofClouds!=totNumofNodes) {
-					System.err.println("WARNING: with equally sized clouds we cannot reach the total number of nodes specified!");
+				if (numofNodes * numofClouds != totNumofNodes) {
+					System.err.println(
+							"WARNING: with equally sized clouds we cannot reach the total number of nodes specified!");
 				}
 				// Default constructs
 
@@ -208,7 +214,7 @@ public class JobDispatchingDemo {
 		}
 		// Wait until the PM Controllers finish their initial activities
 		Timed.simulateUntilLastEvent();
-		
+
 		// Further processing of the CLI arguments
 		boolean doMonitoring = !args[1].startsWith("+");
 		if (!doMonitoring) {
@@ -216,6 +222,12 @@ public class JobDispatchingDemo {
 		}
 		int from = 0;
 		int to = 0;
+		String filterSpec = null;
+		if (args[1].contains("@")) {
+			String[] splitJobSpec = args[1].split("@");
+			args[1] = splitJobSpec[0];
+			filterSpec = splitJobSpec[1];
+		}
 		if (args[1].contains("-")) {
 			String[] range = args[1].split("-");
 			from = Integer.parseInt(range[0]);
@@ -229,9 +241,14 @@ public class JobDispatchingDemo {
 		if (new File(args[0]).exists()) {
 			// The trace comes from a file, we need to see what kind to pick the
 			// right loader
-			producer = args[0].endsWith(".gwf") ? new GWFReader(args[0], from, to, false, DCFJob.class)
-					: (args[0].endsWith(".swf") ? new SWFReader(args[0], from, to, false, DCFJob.class)
-							: new One2HistoryReader(args[0], from, to, false, DCFJob.class));
+			producer = FileBasedTraceProducerFactory.getProducerFromFile(args[0], from, to, false, DCFJob.class);
+			if (producer instanceof GenericRandomTraceGenerator) {
+				int maxTotalProcs = 0;
+				for (IaaSService curr : iaasList) {
+					maxTotalProcs += curr.getCapacities().getRequiredCPUs();
+				}
+				((GenericRandomTraceGenerator) producer).setMaxTotalProcs(maxTotalProcs);
+			}
 		} else {
 			// The trace comes in the form of generic random trace
 			// characteristics.
@@ -250,13 +267,24 @@ public class JobDispatchingDemo {
 			trgen.setMaxTotalProcs(Integer.parseInt(params[8]));
 		}
 
+		if (filterSpec != null) {
+			Acceptor myacceptor;
+			if (new File(filterSpec).exists()) {
+				myacceptor = new IgnoreFilter(filterSpec);
+			} else {
+				myacceptor = new RunningAtaGivenTime(Long.parseLong(filterSpec));
+			}
+			producer = new TraceFilter(producer, myacceptor);
+		}
+
 		// Preparing for sending the jobs to the clouds with the dispatcher
 		MultiIaaSJobDispatcher dispatcher = new MultiIaaSJobDispatcher(producer, iaasList);
 		if (args.length > (doMonitoring ? 4 : 3)) {
 			Thread.sleep(50000);
 		}
 		long beforeSimu = Calendar.getInstance().getTimeInMillis();
-		System.err.println("Job dispatcher is completely prepared at " + beforeSimu);
+		System.err.println(
+				"Job dispatcher (with " + dispatcher.jobs.length + " jobs)  is completely prepared at " + beforeSimu);
 		// Moving the simulator's time just before the first event would come
 		// from the dispatcher
 		Timed.skipEventsTill(dispatcher.getMinsubmittime() * 1000);

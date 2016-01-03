@@ -80,7 +80,8 @@ public class SingleJobRunner implements VirtualMachine.StateChange, ConsumptionE
 				// Mark that we start the job / no further queuing
 				toProcess.started();
 				try {
-					for (int i = 0; i < vmSet.length; i++) {
+					// vmset could get null if the compute task is rapidly terminating!
+					for (int i = 0; vmSet!=null && i < vmSet.length; i++) {
 						// run the job's relevant part in the VM
 						vmSet[i].newComputeTask(
 								toProcess.getExectimeSecs()

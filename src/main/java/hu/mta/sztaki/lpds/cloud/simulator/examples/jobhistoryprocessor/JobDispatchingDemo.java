@@ -18,6 +18,7 @@
  *  You should have received a copy of the GNU General Public License along
  *  with DISSECT-CF Examples.  If not, see <http://www.gnu.org/licenses/>.
  *  
+ *  (C) Copyright 2016, Gabor Kecskemeti (g.kecskemeti@ljmu.ac.uk)
  *  (C) Copyright 2013-15, Gabor Kecskemeti (gkecskem@dps.uibk.ac.at,
  *   									  kecskemeti.gabor@sztaki.mta.hu)
  */
@@ -34,9 +35,8 @@ import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.FileBasedTraceProducerFactory;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GenericTraceProducer;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.RunningAtaGivenTime;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.TraceFilter;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.TraceFilter.Acceptor;
+import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.filters.RunningAtaGivenTime;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.random.GenericRandomTraceGenerator;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.random.RepetitiveRandomTraceGenerator;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
@@ -63,6 +63,8 @@ import hu.mta.sztaki.lpds.cloud.simulator.util.PowerTransitionGenerator;
  * "DISSECT-CF: a simulator to foster energy-aware scheduling in infrastructure clouds"
  * . In Simulation Modeling Practice and Theory, 2015, to Appear.<i> *
  * 
+ * @author "Gabor Kecskemeti, Department of Computer Science, Liverpool John
+ *         Moores University, (c) 2016"
  * @author "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems, MTA SZTAKI (c) 2012-5"
  */
 public class JobDispatchingDemo {
@@ -268,13 +270,7 @@ public class JobDispatchingDemo {
 		}
 
 		if (filterSpec != null) {
-			Acceptor myacceptor;
-			if (new File(filterSpec).exists()) {
-				myacceptor = new IgnoreFilter(filterSpec);
-			} else {
-				myacceptor = new RunningAtaGivenTime(Long.parseLong(filterSpec));
-			}
-			producer = new TraceFilter(producer, myacceptor);
+			producer = new TraceFilter(producer, new RunningAtaGivenTime(Long.parseLong(filterSpec)));
 		}
 
 		// Preparing for sending the jobs to the clouds with the dispatcher

@@ -37,7 +37,6 @@ import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.FileBasedTraceProducerFa
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.GenericTraceProducer;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.TraceFilter;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.filters.RunningAtaGivenTime;
-import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.random.GenericRandomTraceGenerator;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.random.RepetitiveRandomTraceGenerator;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
@@ -59,13 +58,14 @@ import hu.mta.sztaki.lpds.cloud.simulator.util.PowerTransitionGenerator;
  * 
  * This class was used to provide the input for Figures 14-17 in the article:
  * <br>
- * <i>Gabor Kecskemeti:
- * "DISSECT-CF: a simulator to foster energy-aware scheduling in infrastructure clouds"
- * . In Simulation Modeling Practice and Theory, 2015, to Appear.<i> *
+ * <i>Gabor Kecskemeti: "DISSECT-CF: a simulator to foster energy-aware
+ * scheduling in infrastructure clouds" . In Simulation Modeling Practice and
+ * Theory, 2015, to Appear.<i> *
  * 
  * @author "Gabor Kecskemeti, Department of Computer Science, Liverpool John
  *         Moores University, (c) 2016"
- * @author "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems, MTA SZTAKI (c) 2012-5"
+ * @author "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems,
+ *         MTA SZTAKI (c) 2012-5"
  */
 public class JobDispatchingDemo {
 
@@ -243,14 +243,12 @@ public class JobDispatchingDemo {
 		if (new File(args[0]).exists()) {
 			// The trace comes from a file, we need to see what kind to pick the
 			// right loader
-			producer = FileBasedTraceProducerFactory.getProducerFromFile(args[0], from, to, false, DCFJob.class);
-			if (producer instanceof GenericRandomTraceGenerator) {
-				int maxTotalProcs = 0;
-				for (IaaSService curr : iaasList) {
-					maxTotalProcs += curr.getCapacities().getRequiredCPUs();
-				}
-				((GenericRandomTraceGenerator) producer).setMaxTotalProcs(maxTotalProcs);
+			int maxTotalProcs = 0;
+			for (IaaSService curr : iaasList) {
+				maxTotalProcs += curr.getCapacities().getRequiredCPUs();
 			}
+			producer = FileBasedTraceProducerFactory.getProducerFromFile(args[0], from, to, false, maxTotalProcs,
+					DCFJob.class);
 		} else {
 			// The trace comes in the form of generic random trace
 			// characteristics.

@@ -18,10 +18,16 @@
  *  You should have received a copy of the GNU General Public License along
  *  with DISSECT-CF Examples.  If not, see <http://www.gnu.org/licenses/>.
  *  
+ *  (C) Copyright 2016, Gabor Kecskemeti (g.kecskemeti@ljmu.ac.uk)
  *  (C) Copyright 2013-15, Gabor Kecskemeti (gkecskem@dps.uibk.ac.at,
  *   									  kecskemeti.gabor@sztaki.mta.hu)
  */
 package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.job.Job;
@@ -37,10 +43,6 @@ import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ConstantConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.io.VirtualAppliance;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * A simple trace processor that creates as many VMs in the cloud as many is
  * required to host single jobs (e.g., if the job requires 1024 processors then
@@ -50,9 +52,18 @@ import java.util.List;
  * VMIs for the VMs are assumed to be capable of running all the jobs in the
  * trace.
  * 
- * @author "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems, MTA SZTAKI (c) 2012-5"
+ * @author "Gabor Kecskemeti, Department of Computer Science, Liverpool John
+ *         Moores University, (c) 2016"
+ * @author "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems,
+ *         MTA SZTAKI (c) 2012-5"
  */
 public class MultiIaaSJobDispatcher extends Timed {
+	/**
+	 * Shows if the verbosity is switched on for the simulation run. Allows some
+	 * entities in the dispatcher to produce more output.
+	 */
+	public static final boolean verbosity = System
+			.getProperty("hu.mta.sztaki.lpds.cloud.simulator.examples.verbosity") != null;
 
 	/**
 	 * Allows the termination of the processing of the trace
@@ -132,7 +143,8 @@ public class MultiIaaSJobDispatcher extends Timed {
 	 * @param target
 	 *            the iaas systems to be used for submitting the trace to
 	 */
-	public MultiIaaSJobDispatcher(GenericTraceProducer producer, List<IaaSService> target) throws TraceManagementException {
+	public MultiIaaSJobDispatcher(GenericTraceProducer producer, List<IaaSService> target)
+			throws TraceManagementException {
 		this.target = target;
 		// Collecting the jobs
 		List<Job> jobs = producer.getAllJobs();
@@ -179,6 +191,50 @@ public class MultiIaaSJobDispatcher extends Timed {
 		}
 
 		subscribe(minsubmittime * 1000 - currentTime);
+		if (verbosity) {
+			new Thread() {
+				private void printLog(String s) {
+					System.err.println("MIJD ===> realTime=" + new Date() + " " + s);
+				}
+
+				private void printStats() {
+					printLog("subscibed=" + MultiIaaSJobDispatcher.this.isSubscribed() + " simTime="
+							+ Timed.getFireCount() + " destroys=" + getDestroycounter() + " startedjobs=" + minindex);
+				}
+
+				public void run() {
+					printLog("Starting monitoring thread!");
+					boolean keepThread = true;
+					while (keepThread) {
+						printStats();
+						final long cont = System.currentTimeMillis() + 15000;
+						int qlen = -1;
+						while (cont > System.currentTimeMillis() && keepThread) {
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException e) {
+
+							}
+							if (!MultiIaaSJobDispatcher.this.isSubscribed()) {
+								keepThread = false;
+								for (IaaSService s : MultiIaaSJobDispatcher.this.target) {
+									keepThread |= !s.listVMs().isEmpty();
+									if (keepThread) {
+										qlen = s.sched.getQueueLength();
+										break;
+									}
+								}
+							}
+						}
+						if (qlen > 0) {
+							printLog("queue len: " + qlen);
+						}
+					}
+					printStats();
+					printLog("Exiting monitoring thread!");
+				};
+			}.start();
+		}
 	}
 
 	/**
@@ -199,7 +255,8 @@ public class MultiIaaSJobDispatcher extends Timed {
 						: (toprocess.nprocs / ((int) maxmachinecores))
 								+ ((toprocess.nprocs % (int) maxmachinecores) == 0 ? 0 : 1);
 				final double requestedprocs = (double) toprocess.nprocs / requestedTotalInstances;
-				// For simplicity, here we have an assumption that our clouds are uniform...
+				// For simplicity, here we have an assumption that our clouds
+				// are uniform...
 				final int requestedClouds = (int) Math.ceil(requestedTotalInstances > maxIaaSmachines
 						? (double) requestedTotalInstances / maxIaaSmachines : 1);
 				final int uniformSpread = requestedTotalInstances / requestedClouds;
@@ -234,7 +291,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 					} catch (VMManager.VMManagementException e) {
 						// VM cannot be served because of too large resource
 						// request
-						if (System.getProperty("hu.mta.sztaki.lpds.cloud.simulator.examples.verbosity") != null) {
+						if (verbosity) {
 							System.err.println("The oversized job's id: " + toprocess.getId() + " idx: " + i);
 						}
 						ignorecounter++;

@@ -115,7 +115,7 @@ public class MultiIaaSJobDispatcher extends Timed {
 	 * the default processing power share to be requested during the resource
 	 * allocation for the VMs - allows under-provisioning
 	 */
-	protected double useThisProcPower = 0.001;
+	protected double useThisProcPower = Double.MAX_VALUE;
 	/**
 	 * the processing power specified before for the single core of the VM
 	 * should be guaranteed
@@ -168,8 +168,12 @@ public class MultiIaaSJobDispatcher extends Timed {
 			// determining the maximum number of CPU cores available in a PM
 			for (PhysicalMachine pm : iaas.machines) {
 				double cores = pm.getCapacities().getRequiredCPUs();
+				double pp = pm.getCapacities().getRequiredProcessingPower();
 				if (cores > maxmachinecores) {
 					maxmachinecores = (long) cores;
+				}
+				if (pp < useThisProcPower) {
+					useThisProcPower = pp;
 				}
 			}
 			if (iaas.machines.size() > maxIaaSmachines) {

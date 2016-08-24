@@ -18,10 +18,15 @@
  *  You should have received a copy of the GNU General Public License along
  *  with DISSECT-CF Examples.  If not, see <http://www.gnu.org/licenses/>.
  *  
+ *  (C) Copyright 2016, Gabor Kecskemeti (g.kecskemeti@ljmu.ac.uk)
  *  (C) Copyright 2013-15, Gabor Kecskemeti (gkecskem@dps.uibk.ac.at,
  *   									  kecskemeti.gabor@sztaki.mta.hu)
  */
 package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.job.Job;
@@ -31,10 +36,18 @@ import hu.mta.sztaki.lpds.cloud.simulator.helpers.job.Job;
  * simulator. Basically allows the recording of simulation time to the original
  * job representation.
  * 
- * @author 
- *         "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems, MTA SZTAKI (c) 2012"
+ * @author "Gabor Kecskemeti, Department of Computer Science, Liverpool John
+ *         Moores University, (c) 2016"
+ * @author "Gabor Kecskemeti, Laboratory of Parallel and Distributed Systems,
+ *         MTA SZTAKI (c) 2012"
  */
 public class DCFJob extends Job {
+
+	private ArrayList<Job> afterThisJob = null;
+
+	private List<Job> dependants = null;
+
+	private boolean firstQuery = true;
 
 	/**
 	 * Forwards the constructor to the Job's appropriate constructor
@@ -46,11 +59,16 @@ public class DCFJob extends Job {
 	 * @param user
 	 * @param executable
 	 */
-	public DCFJob(String id, long submit, long queue, long exec, int nprocs,
-			double ppCpu, long ppMem, String user, String group,
-			String executable, Job preceding, long delayAfter) {
-		super(id, submit, queue, exec, nprocs, ppCpu, ppMem, user, group,
-				executable, preceding, delayAfter);
+	public DCFJob(String id, long submit, long queue, long exec, int nprocs, double ppCpu, long ppMem, String user,
+			String group, String executable, Job preceding, long delayAfter) {
+		super(id, submit, queue, exec, nprocs, ppCpu, ppMem, user, group, executable, preceding, delayAfter);
+		if (preceding != null) {
+			DCFJob j = (DCFJob) preceding;
+			if (j.afterThisJob == null) {
+				j.afterThisJob = new ArrayList<Job>();
+			}
+			j.afterThisJob.add(this);
+		}
 	}
 
 	/**
@@ -67,4 +85,15 @@ public class DCFJob extends Job {
 		setRan(true);
 		setRealstopTime(Timed.getFireCount() / 1000 - getSubmittimeSecs());
 	}
+
+	public List<Job> getDependants() {
+		if (firstQuery) {
+			if (afterThisJob != null) {
+				dependants = Collections.unmodifiableList(afterThisJob);
+			}
+			firstQuery = false;
+		}
+		return dependants;
+	}
+
 }

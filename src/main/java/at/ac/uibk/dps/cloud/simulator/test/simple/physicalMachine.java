@@ -11,7 +11,7 @@ public class physicalMachine {
 	//	Figure out what parts need to be imported into the physical machine
 	
 	public String physicalMachine = "<?xml version '1.0' encoding = 'UTF-8'?>\n"
-			+ "<machine name='pm1' cores='64' processing='0.001' memory='256000'>";
+			+ "<machine name='pm1' cores='64' processing='1' memory='256000'>";
 
 	
 	//Out.println not working on this file #ask gabor why

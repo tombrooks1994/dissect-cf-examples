@@ -171,8 +171,8 @@ public class physicalMachine {
 	        System.out
 	                .println("Physical Machine " + x + ") cores: " + cores.get(random.nextInt(cores.size()))
 	                + ", memory: " + memory.get(random.nextInt(memory.size()))
-	                + ", disk space: " + diskSpace.get(random.nextInt(memory.size()))
-	                + ", power: " + power.get(random.nextInt(memory.size()))
+	                + ", disk space: " + diskSpace.get(random.nextInt(diskSpace.size()))
+	                + ", power: " + power.get(random.nextInt(power.size()))
 	                );			
 	    }
 	    

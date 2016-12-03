@@ -2,10 +2,13 @@ package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
@@ -30,11 +33,11 @@ public class physicalMachine {
 	public static void main(String[] args) throws Exception {
 		
 		// Start of the component helper
-		System.out.println("------------------------------------------ \n"
-							+ "Physical Machine Components \n" + 
-							"------------------------------------------ \n" +
+		System.out.println("------------------------------------------------ \n"
+							+ "Physical Machine Component Helper \n" + 
+							"------------------------------------------------ \n" +
 							"The components below are measures in bits\n" +
-							"------------------------------------------");
+							"------------------------------------------------");
 		
 		int[] minCores = {64};
 		int[] maxCores = {128};
@@ -71,25 +74,67 @@ public class physicalMachine {
 		int[] maxPower = {5, 10}; // 5w, 10w
 		double[] minPower = {0.9, 2.5}; // .9w, 2.5w
 		
-		System.out.println("7) maximum power for PM: " + maxPower[0] + ", "
+		System.out.println("\n---- the values below are measured in watts ---- \n" + 
+							"\n7) maximum power for PM: " + maxPower[0] + ", "
 							+ maxPower[1] + "\n"
 							+ "8) minimum power for PM: " + minPower[0] 
 							+ ", " + minPower[1]);
 		
 		// End of component helper
-		System.out.println("------------------------------------------");
-	}
+		System.out.println("------------------------------------------------");
+	
 	
 	/*
 	 * Class to create the 1000 physical machines using the array's that are created
 	 * above. The helper above just sets example minimums and maximums there will be
 	 * different values used in the actual PM creator. 
-	 * 
 	 * */
 	
-	public class randomisedPhysicalMachine {
+		/*
+		int[] cores = {32, 64, 128};
 		
 		
+		int pm = new Random().nextInt(cores.length);
+		int random = (cores[pm]);
+		
+		
+		
+		// Create a list
+		List list = new ArrayList();
+
+		// Add elements to list
+
+		// Shuffle the elements in the list
+		Collections.shuffle(list);
+
+		// Create an array
+		int[] array = new int[]{32, 64, 128};
+
+		// Shuffle the elements in the array
+		Collections.shuffle(Arrays.asList(array));
+		
+for (random = 0; random<cores[pm]; random++){
+			
+			System.out.println(list);
+			//System.out.println(cores[pm]);
+			//System.out.println(random);
+			//System.out.println(Arrays.toString(cores));
+			
+		}
+		*/
+		
+		
+		/*
+		 * Randomly iterate through this array (find a way to do this)
+		 * */
+		
+		ArrayList cores = new ArrayList();
+		cores.add(32);
+		cores.add(64);
+		cores.add(128);
+		Collections.shuffle(cores);
+		System.out.println(cores);
+			
 		
 	}
 }

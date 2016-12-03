@@ -49,7 +49,7 @@ public class physicalMachine {
 		
 		System.out.println("3) minimum memory values: " + minMemory[0] + ", " 
 				+ minMemory[1] + ", " + minMemory[2] + "\n"
-				+ "4) amount of memory options in PM: " + memoryArray[0] + ", "
+				+ "4) maximum memory values: " + memoryArray[0] + ", "
 				+ memoryArray[1] + ", " + memoryArray[2] + ", " 
 				+ memoryArray[3]);
 		
@@ -127,14 +127,39 @@ for (random = 0; random<cores[pm]; random++){
 		/*
 		 * Randomly iterate through this array (find a way to do this)
 		 * */
-		
-		ArrayList cores = new ArrayList();
-		cores.add(32);
-		cores.add(64);
-		cores.add(128);
-		Collections.shuffle(cores);
-		System.out.println(cores);
 			
-		
+	    List<String> cores = new ArrayList<String>();
+	    cores.add("32");
+	    cores.add("64");
+	    cores.add("128");
+	    
+	    List<String> memory = new ArrayList<String>();
+	    memory.add("8000");
+	    memory.add("1600");
+	    memory.add("24000");
+	    memory.add("32000");
+	    
+	    List<String> diskSpace = new ArrayList<String>();
+	    diskSpace.add("500000");
+	    diskSpace.add("1000000");
+	    diskSpace.add("2000000");
+	    diskSpace.add("3000000");
+	    
+	    List<String> power = new ArrayList<String>();
+	    power.add("0.9");
+	    power.add("2.5");
+	    power.add("5.0");
+	    power.add("10.0");
+
+	    Random random = new Random();
+
+	    for (int x = 0; x < 1001; x++) {
+	        System.out
+	                .println("Physical Machine " + x + ") cores: " + cores.get(random.nextInt(cores.size()))
+	                + ", memory: " + memory.get(random.nextInt(memory.size()))
+	                + ", disk space: " + diskSpace.get(random.nextInt(memory.size()))
+	                + ", power: " + power.get(random.nextInt(memory.size()))
+	                );			
+	    }
 	}
 }

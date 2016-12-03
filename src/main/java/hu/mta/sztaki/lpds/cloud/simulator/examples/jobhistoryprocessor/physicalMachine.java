@@ -27,12 +27,42 @@ import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.util.CloudLoader;
 import hu.mta.sztaki.lpds.cloud.simulator.util.PowerTransitionGenerator;
 
+/**
+ * This class is for the creation of a physical machine. There is a physical machine
+ * component helper at the top to show the user what the minimum and maximum values
+ * are for each component in the physical machine. The 2nd stage of this class is 
+ * creating 1000 physical machines with randomised values from a set array which is
+ * commented right the way through this file
+ * 
+ * @author 
+ * 		{Thomas Brooks, Liverpool John Moores University, Computer Foresnics Undergraduate}
+ * @Date 
+ * 		{2nd December 2016}
+ * @Project
+ * 		{Failure trace}
+ * @E-mail
+ * 		{t.s.brooks@2013.ljmu.ac.uk}
+ * 
+ */
+
+
 public class physicalMachine {
 
-	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws Exception {
 		
-		// Start of the component helper
+		/**
+		 * 1st stage of physicalMachine.java is the component helper
+		 * 
+		 * This stage of the file is to tell the user or the developer
+		 * of this file what units that the components are measured in
+		 * for example, cores being measured in bits etc. 
+		 * 
+		 * There is two different lists which are values which are 
+		 * measured in bits and values measures in watts (for power) 
+		 * */
+		
+		/** Start of the component helper */
+		
 		System.out.println("------------------------------------------------ \n"
 							+ "Physical Machine Component Helper \n" + 
 							"------------------------------------------------ \n" +
@@ -64,10 +94,10 @@ public class physicalMachine {
 							+ minDiskSpace[1] + ", " 
 							+ minDiskSpace[2]);
 		
-		/*
+		/**
 		 * The power is measured in watts, the minimum is chosen by finding out what
 		 * the minimum amount of watts a computer PSU can output and the maximum
-		 * is chosen by finding out what the maximum for a computer is.		 * 
+		 * is chosen by finding out what the maximum for a computer is.
 		 * */
 		
 		
@@ -80,77 +110,61 @@ public class physicalMachine {
 							+ "8) minimum power for PM: " + minPower[0] 
 							+ ", " + minPower[1]);
 		
-		// End of component helper
+		/** End of component helper */
 		System.out.println("------------------------------------------------");
 	
 	
-	/*
-	 * Class to create the 1000 physical machines using the array's that are created
+	/**
+	 * 2nd stage creates the 1000 physical machines using the array's that are created
 	 * above. The helper above just sets example minimums and maximums there will be
 	 * different values used in the actual PM creator. 
-	 * */
-	
-		/*
-		int[] cores = {32, 64, 128};
+	 * */	
 		
-		
-		int pm = new Random().nextInt(cores.length);
-		int random = (cores[pm]);
-		
-		
-		
-		// Create a list
-		List list = new ArrayList();
-
-		// Add elements to list
-
-		// Shuffle the elements in the list
-		Collections.shuffle(list);
-
-		// Create an array
-		int[] array = new int[]{32, 64, 128};
-
-		// Shuffle the elements in the array
-		Collections.shuffle(Arrays.asList(array));
-		
-for (random = 0; random<cores[pm]; random++){
+		/** Start of the physical machine creator */
 			
-			System.out.println(list);
-			//System.out.println(cores[pm]);
-			//System.out.println(random);
-			//System.out.println(Arrays.toString(cores));
-			
-		}
-		*/
+		/** 
+		 * These array below which are numbers are for the different values set
+		 * in the component helper such as cores, memory, disk space and power. 
+		 * These are all measure in the same way that the helper is measured in.		 * 
+		 */
 		
-		
-		/*
-		 * Randomly iterate through this array (find a way to do this)
-		 * */
-			
+		/** Cores Array */
 	    List<String> cores = new ArrayList<String>();
 	    cores.add("32");
 	    cores.add("64");
 	    cores.add("128");
 	    
+	    /** Memory Array */
 	    List<String> memory = new ArrayList<String>();
 	    memory.add("8000");
 	    memory.add("1600");
 	    memory.add("24000");
 	    memory.add("32000");
 	    
+	    /** Disk Space Array */	    
 	    List<String> diskSpace = new ArrayList<String>();
 	    diskSpace.add("500000");
 	    diskSpace.add("1000000");
 	    diskSpace.add("2000000");
 	    diskSpace.add("3000000");
 	    
+	    /** Power Array */	    
 	    List<String> power = new ArrayList<String>();
 	    power.add("0.9");
 	    power.add("2.5");
 	    power.add("5.0");
 	    power.add("10.0");
 
+	    /**
+	     * This is the final stage of creation of the physical machines
+	     * There is use of the Random(); function which is preinstalled into
+	     * java. There is then a loop that iterates through the List Arrays
+	     * and randomly picks a value from each one and returns the values
+	     * In the output there is names for each component. The for loop iterates
+	     * through the arrays 1000 times and chooses 1000 random values to generate
+	     * 1000 physical machines.
+	     * */
+	    
 	    Random random = new Random();
 
 	    for (int x = 0; x < 1001; x++) {
@@ -161,5 +175,7 @@ for (random = 0; random<cores[pm]; random++){
 	                + ", power: " + power.get(random.nextInt(memory.size()))
 	                );			
 	    }
+	    
+	    /** End of physical machine creator */
 	}
 }

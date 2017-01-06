@@ -1,6 +1,7 @@
 package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
 
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -9,6 +10,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+
+import org.junit.Assert;
 
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
@@ -19,6 +22,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.filters.RunningAtaGivenT
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.random.RepetitiveRandomTraceGenerator;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.PhysicalMachineController;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.SchedulingDependentMachines;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
@@ -198,9 +202,9 @@ public class physicalMachine {
 	    
 	    Random random = new Random();
 
-	    for (int x = 0; x < 1001; x++) {
+	    for (int x = 0; x < 1000; x++) {
 	        System.out
-	                .println("Physical Machine " + x + ") cores: " + cores.get(random.nextInt(cores.size()))
+	                .println("Physical Machine " + (x+1) + ") cores: " + cores.get(random.nextInt(cores.size()))
 	                + ", memory: " + memory.get(random.nextInt(memory.size()))
 	                + ", disk space: " + diskSpace.get(random.nextInt(diskSpace.size()))
 	                + ", power: " + power.get(random.nextInt(power.size()))
@@ -208,9 +212,59 @@ public class physicalMachine {
 	                + ", motherboard: " + mobo.get(random.nextInt(mobo.size()))
 	                + ", cdrom: " + cdrom.get(random.nextInt(cdrom.size()))
 	                + ", floppy drives: " + floppy.get(random.nextInt(floppy.size()))
-	                );			
+	                );	
 	        
+	        String cloudDef = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+	    			+ "<cloud id=\"(x+1)\"	scheduler=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler\" pmcontroller=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines\">\n"
+	    			+ "<machine id=\"(x+1)\" cores=\"cores.get(random.nextInt(cores.size()))\"processing=\"cores.get(random.nextInt(cores.size()))\" memory=\"memory.get(random.nextInt(memory.size()))\">\n"
+	    			+ "<powerstates kind=\"host\">\n"
+	    			+ "<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"power.get(random.nextInt(power.size()))\" max=\"power.get(random.nextInt(power.size()))\" inState=\"default\" />\n"
+	    			+ "<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"power.get(random.nextInt(power.size()))\" max=\"power.get(random.nextInt(power.size()))\" inState=\"OFF\" />\n"
+	    			+ "</powerstates>\n"
+	    			+ "<statedelays startup=\"89000\" shutdown=\"29000\" />\n"
+	    			+ "<repository id=\"disk\" capacity=\"5000000000000\" inBW=\"250000\" outBW=\"250000\" diskBW=\"50000\">\n"
+	    			+ "<powerstates kind=\"storage\">\n"
+	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"6.5\" max=\"9\" inState=\"default\" />\n"
+	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
+	    			+ "</powerstates>\n"
+	    			+ "<powerstates kind=\"network\">\n"
+	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"3.4\" max=\"3.8\" inState=\"default\" />\n"
+	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
+	    			+ "</powerstates>\n"
+	    			+ "<latency towards=\"repo\" value=\"5\" />\n"
+	    			+ "</repository>\n"
+	    			+ "</machine>\n"
+	    			+ "<repository id=\"repo\" capacity=\"38000000000000\" inBW=\"250000\" outBW=\"250000\" diskBW=\"100000\">\n"
+	    			+ "<powerstates kind=\"storage\">\n"
+	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"65\" max=\"90\" inState=\"default\" /> \n"
+	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
+	    			+ "</powerstates>\n"
+	    			+ "<powerstates kind=\"network\">\n"
+	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"3.4\" max=\"3.8\" inState=\"default\" />\n"
+	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
+	    			+ "</powerstates>\n" + "<latency towards=\"disk\" value=\"5\" />\n"
+	    			+ "</repository>\n" + "</cloud>\n";
+	    
+	        File temp = File.createTempFile("dissect-test", "cloudLoader");
+			RandomAccessFile raf = new RandomAccessFile(temp, "rw");
+			raf.writeBytes(cloudDef);
+			raf.close();
+			IaaSService cloud = CloudLoader.loadNodes(temp.toString());
+			Assert.assertTrue("FirstFitScheduler should be the VM scheduler",
+					cloud.sched instanceof FirstFitScheduler);
+			Assert.assertTrue("AlwaysonMachines should be the PM scheduler",
+					cloud.pmcontroller instanceof AlwaysOnMachines);
+			Assert.assertEquals("Only one PM should be loaded", 1,
+					cloud.machines.size());
+			Assert.assertEquals("Only one repository should be loaded", 1,
+					cloud.repositories.size());
+			temp.delete();
+			
 	    }
+	    
+	    
+	    
+	    
 	    
 	    /** End of physical machine creator */
 	}

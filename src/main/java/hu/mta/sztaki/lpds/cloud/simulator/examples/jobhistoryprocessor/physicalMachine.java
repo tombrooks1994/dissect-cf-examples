@@ -154,6 +154,37 @@ public class physicalMachine {
 	    power.add("2.5");
 	    power.add("5.0");
 	    power.add("10.0");
+	    
+	    /** Hard drives array */
+	    List<String> hD = new ArrayList<String>();
+	    hD.add("1000000");
+	    hD.add("2000000");
+	    hD.add("3000000");
+	    hD.add("4000000");
+	    
+	    /** Motherboard Array */
+	    /** There will be different types of motherboards added at a later date. */
+	    List<String> mobo = new ArrayList<String>();
+	    mobo.add("Type 1"); 
+	    mobo.add("Type 2");
+	    mobo.add("Type 3");
+	    mobo.add("Type 4");
+	    
+	    /** Cd-rom drives */
+	    List<String> cdrom = new ArrayList<String>();
+	    cdrom.add("1 Present");
+	    cdrom.add("2 Present");
+	    cdrom.add("3 Present");
+	    cdrom.add("4 Present");
+	    cdrom.add("none present");
+	    
+	    /** Floppy Drivers */ 
+	    List<String> floppy = new ArrayList<String>();
+	    floppy.add("1 Present");
+	    floppy.add("2 Present");
+	    floppy.add("3 Present");
+	    floppy.add("4 Present");
+	    floppy.add("none present");
 
 	    /**
 	     * This is the final stage of creation of the physical machines
@@ -173,7 +204,12 @@ public class physicalMachine {
 	                + ", memory: " + memory.get(random.nextInt(memory.size()))
 	                + ", disk space: " + diskSpace.get(random.nextInt(diskSpace.size()))
 	                + ", power: " + power.get(random.nextInt(power.size()))
+	                + ", hard drive: " + hD.get(random.nextInt(hD.size()))
+	                + ", motherboard: " + mobo.get(random.nextInt(mobo.size()))
+	                + ", cdrom: " + cdrom.get(random.nextInt(cdrom.size()))
+	                + ", floppy drives: " + floppy.get(random.nextInt(floppy.size()))
 	                );			
+	        
 	    }
 	    
 	    /** End of physical machine creator */

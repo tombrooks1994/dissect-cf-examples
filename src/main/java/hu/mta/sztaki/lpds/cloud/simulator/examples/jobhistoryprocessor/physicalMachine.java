@@ -250,7 +250,7 @@ public class physicalMachine {
 			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
 			+ "</powerstates>\n" + "<latency towards=\"disk\" value=\"5\" />\n"
 			+ "</repository>\n" + "</cloud>\n"; 
-	        */
+	        **/
 	        
 	        
 	        

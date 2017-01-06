@@ -195,47 +195,31 @@ public class physicalMachine {
 	    Random random = new Random();
 
 	    for (int x = 0; x < 1000; x++) {
-	        System.out
+	        /**System.out
 	                .println("Physical Machine " + (x+1) + ") cores: " + cores.get(random.nextInt(cores.size()))
 	                + ", memory: " + memory.get(random.nextInt(memory.size()))
 	                + ", disk space: " + diskSpace.get(random.nextInt(diskSpace.size()))
 	                + ", power: " + power.get(random.nextInt(power.size()))
 	                + ", hard drive: " + hD.get(random.nextInt(hD.size()))
 	                + ", motherboard: " + mobo.get(random.nextInt(mobo.size()))
-	                + ", cdrom: " + cdrom.get(random.nextInt(cdrom.size()))
-	                );	
+	                + ", cdrom: " + cdrom.get(random.nextInt(cdrom.size())) + "\n"
+	                );	*/
 	        
-	        String cloudDef = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-	    			+ "<cloud id=\"(x+1)\"	scheduler=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler\" pmcontroller=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines\">\n"
-	    			+ "<machine id=\"(x+1)\" cores=\"cores.get(random.nextInt(cores.size()))\"processing=\"cores.get(random.nextInt(cores.size()))\" memory=\"memory.get(random.nextInt(memory.size()))\">\n"
-	    			+ "<powerstates kind=\"host\">\n"
-	    			+ "<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"power.get(random.nextInt(power.size()))\" max=\"power.get(random.nextInt(power.size()))\" inState=\"default\" />\n"
-	    			+ "<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"power.get(random.nextInt(power.size()))\" max=\"power.get(random.nextInt(power.size()))\" inState=\"OFF\" />\n"
-	    			+ "</powerstates>\n"
-	    			+ "<statedelays startup=\"89000\" shutdown=\"29000\" />\n"
-	    			+ "<repository id=\"disk\" capacity=\"5000000000000\" inBW=\"250000\" outBW=\"250000\" diskBW=\"50000\">\n"
-	    			+ "<powerstates kind=\"storage\">\n"
-	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"6.5\" max=\"9\" inState=\"default\" />\n"
-	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
-	    			+ "</powerstates>\n"
-	    			+ "<powerstates kind=\"network\">\n"
-	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"3.4\" max=\"3.8\" inState=\"default\" />\n"
-	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
-	    			+ "</powerstates>\n"
-	    			+ "<latency towards=\"repo\" value=\"5\" />\n"
-	    			+ "</repository>\n"
+	        String xml = "\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+	    			+ "<cloud id=" + " " + (x+1) + ">\n"
+	        		+ "<machine id=" + " " + (x+1) + ">\n"
+	    			+ "<memory size=" + " " + (memory.get(random.nextInt(memory.size()))) + " " + "></memory>\n"
+	        		+ "<diskSpace size=" + " " + (diskSpace.get(random.nextInt(diskSpace.size()))) + " " +"></diskSpace>\n"
+	    			+ "<power output=" + " " + (power.get(random.nextInt(power.size()))) + " " + "></power>\n"
+	        		+ "<hardDrive size=" + " " + (hD.get(random.nextInt(hD.size()))) + " " + "></hardDrive>\n"
+	    			+ "<motherboard type=" + " " + (mobo.get(random.nextInt(mobo.size()))) + " " + "></motherboard>\n"
+	        		+ "cdrom amount=" + " " + (cdrom.get(random.nextInt(cdrom.size()))) + " " + "></cdrom>\n"
 	    			+ "</machine>\n"
-	    			+ "<repository id=\"repo\" capacity=\"38000000000000\" inBW=\"250000\" outBW=\"250000\" diskBW=\"100000\">\n"
-	    			+ "<powerstates kind=\"storage\">\n"
-	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"65\" max=\"90\" inState=\"default\" /> \n"
-	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
-	    			+ "</powerstates>\n"
-	    			+ "<powerstates kind=\"network\">\n"
-	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"3.4\" max=\"3.8\" inState=\"default\" />\n"
-	    			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
-	    			+ "</powerstates>\n" + "<latency towards=\"disk\" value=\"5\" />\n"
-	    			+ "</repository>\n" + "</cloud>\n";
-	    
+	    			+ "</cloud>";
+
+	        System.out.println(xml);
+	        
+	        /**
 	        File temp = File.createTempFile("dissect-test", "cloudLoader");
 			RandomAccessFile raf = new RandomAccessFile(temp, "rw");
 			raf.writeBytes(cloudDef);
@@ -250,7 +234,7 @@ public class physicalMachine {
 			Assert.assertEquals("Only one repository should be loaded", 1,
 					cloud.repositories.size());
 			temp.delete();
-			
+			*/
 	    }
 	    
 	    

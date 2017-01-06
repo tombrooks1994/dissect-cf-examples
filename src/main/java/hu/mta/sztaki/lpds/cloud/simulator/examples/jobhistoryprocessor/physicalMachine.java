@@ -182,14 +182,6 @@ public class physicalMachine {
 	    cdrom.add("4 Present");
 	    cdrom.add("none present");
 	    
-	    /** Floppy Drivers */ 
-	    List<String> floppy = new ArrayList<String>();
-	    floppy.add("1 Present");
-	    floppy.add("2 Present");
-	    floppy.add("3 Present");
-	    floppy.add("4 Present");
-	    floppy.add("none present");
-
 	    /**
 	     * This is the final stage of creation of the physical machines
 	     * There is use of the Random(); function which is preinstalled into
@@ -211,7 +203,6 @@ public class physicalMachine {
 	                + ", hard drive: " + hD.get(random.nextInt(hD.size()))
 	                + ", motherboard: " + mobo.get(random.nextInt(mobo.size()))
 	                + ", cdrom: " + cdrom.get(random.nextInt(cdrom.size()))
-	                + ", floppy drives: " + floppy.get(random.nextInt(floppy.size()))
 	                );	
 	        
 	        String cloudDef = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

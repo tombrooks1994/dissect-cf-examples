@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.Assert;
-
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
 import hu.mta.sztaki.lpds.cloud.simulator.helpers.trace.FileBasedTraceProducerFactory;
@@ -183,6 +181,46 @@ public class physicalMachine {
 	    cdrom.add("none present");
 	    
 	    /**
+	     * A normal speed for latency is  5 and 40 ms
+	     * This array below differenciates the different speeds and
+	     * distributes them over the 1000 physical machines 
+	     * */
+	    
+	    List<String> latency = new ArrayList<String>();
+	    latency.add("5");
+	    latency.add("10");
+	    latency.add("15");
+	    latency.add("20");
+	    latency.add("25");
+	    latency.add("30");
+	    latency.add("35");
+	    latency.add("40");
+	    
+	    /**
+	     * Power max array 
+	     * 250w-750w*/
+	    	    
+	    List<String> maxPowerPM = new ArrayList<String>();
+	    maxPowerPM.add("250");
+	    maxPowerPM.add("350");
+	    maxPowerPM.add("450");
+	    maxPowerPM.add("550");
+	    maxPowerPM.add("650");
+	    maxPowerPM.add("750");
+	    
+	    /**
+	     * Power max array 
+	     * 25w-75w*/
+	    
+	    List<String> idlePowerPM = new ArrayList<String>();
+	    idlePowerPM.add("25");
+	    idlePowerPM.add("35");
+	    idlePowerPM.add("45");
+	    idlePowerPM.add("55");
+	    idlePowerPM.add("65");
+	    idlePowerPM.add("75");
+	    
+	    /**
 	     * This is the final stage of creation of the physical machines
 	     * There is use of the Random(); function which is preinstalled into
 	     * java. There is then a loop that iterates through the List Arrays
@@ -206,7 +244,7 @@ public class physicalMachine {
 	                );	*/
 	        
 	        String xml = "\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-	    			+ "<cloud id=" + " " + (x+1) + ">\n"
+	    			+ "<cloud id=1>\n"
 	        		+ "<machine id=" + " " + (x+1) + ">\n"
 	    			+ "<memory size=" + " " + (memory.get(random.nextInt(memory.size()))) + " " + "></memory>\n"
 	        		+ "<diskSpace size=" + " " + (diskSpace.get(random.nextInt(diskSpace.size()))) + " " +"></diskSpace>\n"
@@ -215,14 +253,11 @@ public class physicalMachine {
 	    			+ "<motherboard type=" + " " + (mobo.get(random.nextInt(mobo.size()))) + " " + "></motherboard>\n"
 	        		+ "<cdrom amount=" + " " + (cdrom.get(random.nextInt(cdrom.size()))) + " " + "></cdrom>\n"
 	    			+ "</machine>\n"
-	    			+ "</cloud>";
-
-	        System.out.println(xml);
-	        		
-	        /**
-	        String cloudDef = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			+ "<cloud id=\"test\"	scheduler=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler\" pmcontroller=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines\">\n"
-			+ "<machine id=\"testPM\" cores=\"64\" processing=\"0.001\" memory=\"256000000000\">\n"
+	    			+ "</cloud>";        
+	        
+	        String newxml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			+ "<cloud id=\"oxygen\"	scheduler=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler\" pmcontroller=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines\">\n"
+			+ "<machine id=\" \"" + (x+1) + " cores=\""+ (cores.get(random.nextInt(cores.size()))) +" processing=\"0.001\" memory=\"256000000000\">\n"
 			+ "<powerstates kind=\"host\">\n"
 			+ "<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"296\" max=\"493\" inState=\"default\" />\n"
 			+ "<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"20\" max=\"20\" inState=\"OFF\" />\n"
@@ -249,12 +284,11 @@ public class physicalMachine {
 			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" idle=\"3.4\" max=\"3.8\" inState=\"default\" />\n"
 			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
 			+ "</powerstates>\n" + "<latency towards=\"disk\" value=\"5\" />\n"
-			+ "</repository>\n" + "</cloud>\n"; 
-	        **/
+			+ "</repository>\n" + "</cloud>\n";
 	        
 	        
-	        
-	        
+	        System.out.println(newxml);
+	        		
 	    }
 	   
 	    /** End of physical machine creator */

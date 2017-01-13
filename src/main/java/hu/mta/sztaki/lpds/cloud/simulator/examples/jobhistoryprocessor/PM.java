@@ -48,7 +48,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.util.PowerTransitionGenerator;
  */
 
 
-public class physicalMachine {
+public class PM {
 
 	public static void main(String[] args) throws Exception {
 		

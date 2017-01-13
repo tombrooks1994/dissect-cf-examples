@@ -1,4 +1,4 @@
-package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
+package at.ac.uibk.dps.cloud.simulator.test.simple.cloud;
 
 
 import java.io.File;
@@ -200,8 +200,8 @@ public class physicalMachine {
 	     * through the arrays 1000 times and chooses 1000 random values to generate
 	     * 1000 physical machines.
 	     * */
-	    try (FileWriter file = new FileWriter("hello.txt")) {
-	    	  String sb = " ";
+	    try (FileWriter file = new FileWriter("PM.txt")) {
+	    	  
 	    Random random = new Random();
 
 	    for (int x = 0; x < 1000; x++) {
@@ -227,7 +227,9 @@ public class physicalMachine {
 			
 			+ "<statedelays startup=\"89000\" shutdown=\"29000\" />\n"
 			
-			+ "<repository id=\"disk\" capacity=\"5000000000000\" inBW=\"250000\" outBW=\"250000\" diskBW=\"50000\">\n"
+			+ "<repository id=\"disk\"capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
+			+ "\" inBW=\"" + inBW.get(random.nextInt(inBW.size())) + "\" outBW=\"" 
+			+ outBW.get(random.nextInt(outBW.size())) + "\" diskBW=\"" + diskBW.get(random.nextInt(diskBW.size())) + "\">\n"
 			
 			+ "<powerstates kind=\"storage\">\n"
 			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" "
@@ -247,7 +249,7 @@ public class physicalMachine {
 			+ "</repository>\n"
 			+ "</machine>\n"
 			
-			+ "<repository id=\"hydrogen\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
+			+ "<repository id=\"repo\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
 			+ "\" inBW=\"" + inBW.get(random.nextInt(inBW.size())) + "\" outBW=\"" 
 			+ outBW.get(random.nextInt(outBW.size())) + "\" diskBW=\"" + diskBW.get(random.nextInt(diskBW.size())) + "\">\n"
 			
@@ -269,16 +271,16 @@ public class physicalMachine {
 			+ "</powerstates>\n" 
 			
 			+ "<latency towards=\"disk\" value=\"" + latency.get(random.nextInt(latency.size()))  + "\" />\n"
-			+ "</repository>\n" + "</cloud>\n";
+			+ "</repository>\n" + "</cloud>\n\n\n";
 	        
-	        file.write(sb);
+	        file.write(newxml);
 	        
 	        System.out.println(newxml);
 
 	    }
-	        		
+	    
 	    }
-	   
+
 	    /** End of physical machine creator */
 	}
 }

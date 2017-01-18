@@ -192,6 +192,7 @@ public class physicalMachine {
 	     * */
 	    
 	    /**
+	     * @xml
 	     * This is the final stage of creation of the physical machines
 	     * There is use of the Random(); function which is preinstalled into
 	     * java. There is then a loop that iterates through the List Arrays
@@ -201,7 +202,11 @@ public class physicalMachine {
 	     * 1000 physical machines.
 	     * */
 	    
-	    
+	    /**
+	     * @xml 
+	     * 		This part of the code is creating 1 xml, 1 cloud and creating 1000
+	     * 		machines within the xml file which have randomised values
+	     * */
 	    
 	    try (FileWriter file = new FileWriter("PM.xml")) {
 	    

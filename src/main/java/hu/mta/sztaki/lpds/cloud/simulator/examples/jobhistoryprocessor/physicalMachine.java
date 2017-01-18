@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.cloud.simulator.test.simple.cloud;
+package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
 
 
 import java.io.File;
@@ -200,14 +200,24 @@ public class physicalMachine {
 	     * through the arrays 1000 times and chooses 1000 random values to generate
 	     * 1000 physical machines.
 	     * */
-	    try (FileWriter file = new FileWriter("PM.txt")) {
-	    	  
+	    
+	    
+	    
+	    try (FileWriter file = new FileWriter("PM.xml")) {
+	    
+	    	String newxml;
+		    String xmlSchema;
+	    	
 	    Random random = new Random();
 
+	    xmlSchema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	    file.write(xmlSchema);
+	    System.out.println(xmlSchema);
+	    
 	    for (int x = 0; x < 1000; x++) {
 	        
-	        String newxml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			+ "<cloud id=\"oxygen\"	scheduler=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler\" pmcontroller=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines\">\n"
+	        newxml = 
+			"<cloud id=\"oxygen\"	scheduler=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler\" pmcontroller=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines\">\n"
 			
 			+ "<machine id=\"" + (x+1) + "\" cores=\"" + (cores.get(random.nextInt(cores.size()))) 
 			+"\" processing=\"" + (processSpeed.get(random.nextInt(processSpeed.size()))) 
@@ -227,7 +237,7 @@ public class physicalMachine {
 			
 			+ "<statedelays startup=\"89000\" shutdown=\"29000\" />\n"
 			
-			+ "<repository id=\"disk\"capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
+			+ "<repository id=\"disk\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
 			+ "\" inBW=\"" + inBW.get(random.nextInt(inBW.size())) + "\" outBW=\"" 
 			+ outBW.get(random.nextInt(outBW.size())) + "\" diskBW=\"" + diskBW.get(random.nextInt(diskBW.size())) + "\">\n"
 			
@@ -276,8 +286,12 @@ public class physicalMachine {
 	        file.write(newxml);
 	        
 	        System.out.println(newxml);
-
+	    
 	    }
+	    	    
+	    
+	    
+	   
 	    
 	    }
 

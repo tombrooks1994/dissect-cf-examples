@@ -10,9 +10,11 @@ import java.util.Random;
 
 import org.junit.Assert;
 
+import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
+import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode;
 import hu.mta.sztaki.lpds.cloud.simulator.util.CloudLoader;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 /**
@@ -207,62 +209,62 @@ public class physicalMachine {
 	     * 		This part of the code is creating 1 xml, 1 cloud and creating 1000
 	     * 		machines within the xml file which have randomised values
 	     * */
-	    
+	    Random random = new Random();
 	    try (FileWriter file = new FileWriter("PM.xml")) {
 	    
 	    	String newxml;
 		    String xmlSchema;
 	    	
-	    Random random = new Random();
+	    
 
 	    xmlSchema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
 	    		+ "<cloud id=\"oxygen-1\"	scheduler=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler\" pmcontroller=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines\">\n";
 	    file.write(xmlSchema);
 	    System.out.println(xmlSchema);
 	    
-	    for (int x = 0; x < 999; x++) {
+	    for (int x = 0; x < 1000; x++) {
 	        
 	        newxml = 
-			"<machine id=\"" + (x+1) + "\" cores=\"" + (cores.get(random.nextInt(cores.size()))) 
+			"\t<machine id=\"" + (x+1) + "\" cores=\"" + (cores.get(random.nextInt(cores.size()))) 
 			+"\" processing=\"" + (processSpeed.get(random.nextInt(processSpeed.size()))) 
 			+ "\" memory=\"" + (diskSpace.get(random.nextInt(diskSpace.size()))) + "\">\n"
 			
-			+ "<powerstates kind=\"host\">\n"
+			+ "\t\t<powerstates kind=\"host\">\n"
 			
-			+ "<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" "
+			+ "\t\t\t<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" "
 			+ "idle=\"" + idlePowerPM.get(random.nextInt(idlePowerPM.size())) 
 			+ "\" max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size())) 
 			+ "\" inState=\"default\" />\n"
 			
-			+ "<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" "
+			+ "\t\t\t<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" "
 			+ "idle=\"" + idlePowerPM.get(random.nextInt(idlePowerPM.size())) 
 			+ "\" max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size())) + "\" inState=\"OFF\" />\n"
 			
-			+ "</powerstates>\n"
+			+ "\t\t</powerstates>\n"
 			
-			+ "<statedelays startup=\"89000\" shutdown=\"29000\" />\n"
+			+ "\t\t<statedelays startup=\"89000\" shutdown=\"29000\" />\n"
 			
-			+ "<repository id=\"alpha-omega-"+ (x+1) + "\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
+			+ "\t\t<repository id=\"alpha-omega-"+ (x+1) + "\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
 			+ "\" inBW=\"" + inBW.get(random.nextInt(inBW.size())) + "\" outBW=\"" 
 			+ outBW.get(random.nextInt(outBW.size())) + "\" diskBW=\"" + diskBW.get(random.nextInt(diskBW.size())) + "\">\n"
 			
-			+ "<powerstates kind=\"storage\">\n"
-			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" "
+			+ "\t\t\t<powerstates kind=\"storage\">\n"
+			+ "\t\t\t\t<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" "
 			+ "idle=\"" + idlePowerPM.get(random.nextInt(idlePowerPM.size())) + "\" "
 					+ "max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size()))  + "\" inState=\"default\" />\n"
-			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
-			+ "</powerstates>\n"
+			+ "\t\t\t\t<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
+			+ "\t\t\t</powerstates>\n"
 			
-			+ "<powerstates kind=\"network\">\n"
-			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" "
+			+ "\t\t\t<powerstates kind=\"network\">\n"
+			+ "\t\t\t\t<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" "
 			+ "idle=\"" + idlePowerPM.get(random.nextInt(idlePowerPM.size())) + "\" "
 					+ "max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size()))  +  "\" inState=\"default\" />\n"
-			+ "<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
-			+ "</powerstates>\n"
+			+ "\t\t\t\t<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
+			+ "\t\t\t</powerstates>\n"
 			
-			+ "<latency towards=\"alpha-omega-"+(x+2) +"\" value=\"" + latency.get(random.nextInt(latency.size()))  + "\" />\n"
-			+ "</repository>\n"
-			+ "</machine>\n";
+			+ "\t\t\t<latency towards=\"alpha-omega-"+(x+2) +"\" value=\"" + latency.get(random.nextInt(latency.size()))  + "\" />\n"
+			+ "\t\t</repository>\n"
+			+ "\t</machine>\n";
 	        
 	        file.write(newxml);
 	        
@@ -272,6 +274,7 @@ public class physicalMachine {
 	    	    
 	    String cloudEnd = "</cloud>";
 	    file.write(cloudEnd);
+	    file.close();
 	    System.out.println(cloudEnd);
 	    
 	    IaaSService iaas=CloudLoader.loadNodes("PM.xml");
@@ -283,8 +286,16 @@ public class physicalMachine {
         	System.out.println("Failure, The physical machines have failed to be created.");
         	
         }
-
+	    
 	    }
+	    
+	    /**
+	     * To start connecting node together using NetworkNode.initTransfer(); 
+	     * need to learn how to declare it. 
+	     * */
+	    
+	    NetworkNode.initTransfer(0, 0, null, null, null);
+	    Timed.simulateUntilLastEvent();
 
 	    /** End of physical machine creator */
 	}

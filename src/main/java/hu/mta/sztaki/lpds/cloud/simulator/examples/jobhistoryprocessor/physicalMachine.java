@@ -238,7 +238,7 @@ public class physicalMachine {
 	    Random r = new Random();
         int[] ar1 = new int[1000];
         for(int i = 0; i < ar1.length; i++) {
-            ar1[i] = r.nextInt(1000);
+            ar1[i] = r.nextInt(3);
             System.out.print(ar1[i] + "  ");
 
 	    
@@ -290,13 +290,15 @@ public class physicalMachine {
 	        
 			file.write(newxml);
 	        
-	        file.write(EOxmlF);
-	        
-	        for (int j = 0; j < 3; j++) {
+			for (int j = 0; j < 3; j++) {
 		        String lat = "\t\t\t<latency towards=\"" + j + "\" value=\"5\"/>";     
 		        //System.out.println(lat);
 		        file.write(lat);
 		        }
+			
+	        file.write(EOxmlF);
+	        
+	        
 	        
 	        
 	        System.out.println(newxml);

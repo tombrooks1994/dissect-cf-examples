@@ -236,17 +236,10 @@ public class physicalMachine {
 	    resp.add("kepler"+ (random.nextInt(1000)));
 	    
 	    Random r = new Random();
-        int[] ar1 = new int[1000];
-        for(int i = 0; i < ar1.length; i++) {
-            ar1[i] = r.nextInt(3);
-            System.out.print(ar1[i] + "  ");
-
+        int[] ar1 = new int[5];
+        
 	    
-	    List<String> repo = new ArrayList<String>();
-	    repo.add(resp.get(random.nextInt(resp.size())));
-	    
-	    for (int x = 0; x < 3; x++) {    	    
-	    	String RepoId = resp.get(random.nextInt(resp.size()));
+	    for (int x = 0; x < 5; x++) {    	    
 			newxml = 
 			"\t<machine id=\"" + (x+1) + "\" cores=\"" + (cores.get(random.nextInt(cores.size()))) 
 			+"\" processing=\"" + (processSpeed.get(random.nextInt(processSpeed.size()))) 
@@ -284,29 +277,21 @@ public class physicalMachine {
 					+ "max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size()))  +  "\" inState=\"default\" />\n"
 			+ "\t\t\t\t<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
 			+ "\t\t\t</powerstates>";
-			String EOxmlF = "\t\t</repository>\n"
-					+ "\t</machine>";
-			        
-	        
+
 			file.write(newxml);
-	        
-			for (int j = 0; j < 3; j++) {
-		        String lat = "\t\t\t<latency towards=\"" + j + "\" value=\"5\"/>";     
+			
+			for (int j = 0; j < 5; j++) {
+		        String lat = "\t\t\t<latency towards=\"" + (j+1) + "\" value=\"5\"/>";     
 		        //System.out.println(lat);
 		        file.write(lat);
 		        }
-			
+			String EOxmlF = "\t\t</repository>\n"
+					+ "\t</machine>";
 	        file.write(EOxmlF);
-	        
-	        
-	        
-	        
+
 	        System.out.println(newxml);
 	        System.out.println(EOxmlF);
-	        
-	        
-
-				    
+	    
 	    }   
 	       	    
 	    String cloudEnd = "</cloud>";
@@ -315,22 +300,34 @@ public class physicalMachine {
 	    System.out.println(cloudEnd);
 	    
 	    IaaSService iaas = CloudLoader.loadNodes("PM.xml");
-	    if(iaas.machines.size() == 3) {
+	    if(iaas.machines.size() == 5) {
 	    	System.out.println("Finally we are there.");
-	    	NetworkNode nn1 = iaas.machines.get(random.nextInt(3)).localDisk;
-	    	NetworkNode nn2 = iaas.machines.get(random.nextInt(3)).localDisk; 
+	    	NetworkNode nn1 = iaas.machines.get(random.nextInt(5)).localDisk;
+	    	NetworkNode nn2 = iaas.machines.get(random.nextInt(5)).localDisk; 
 	    	
-	    	System.out.println("Network Node 1:" + nn1);
-	    	System.out.println("Network Node 2: " + nn2);
+	    	
 	    	
 	    	final long size = 10000;
 	    	
+	    	if (nn1 != nn2) {
+	    		System.out.println("Network Node 1: " + nn1);
+		    	System.out.println("Network Node 2: " + nn2);
 	    	NetworkNode.initTransfer(size, ResourceConsumption.unlimitedProcessing, nn1, nn2, new ConsumptionEventAdapter());
+	    	} else {
+	    		
+	    		System.out.println("You can't send data to yourself!");
+	    		
+	    	}
 	    	
-	    	
+	    	if (nn1 != nn2) {
 	    	Timed.simulateUntilLastEvent();
-	    	System.out.println("Network Node 1:" + nn1);
+	    	System.out.println("Network Node 1: " + nn1);
 	    	System.out.println("Network Node 2: " + nn2);
+	    } else {
+    		
+    		System.out.println("You can't send data to yourself!");
+    		
+    	}
 	    }
 	    
 	    
@@ -339,7 +336,7 @@ public class physicalMachine {
         	System.out.println("Failure, The physical machines have failed to be created.");
 	    	
         }
-	    
+        
 	    
 	    
 	    /**
@@ -399,7 +396,8 @@ public class physicalMachine {
 		
 	}
 	*/
-	}}
+	}
+	    
 }
 
 

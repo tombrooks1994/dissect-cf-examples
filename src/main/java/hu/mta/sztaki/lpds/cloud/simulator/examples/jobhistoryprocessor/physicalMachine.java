@@ -235,10 +235,18 @@ public class physicalMachine {
 	    resp.add("neon" + (random.nextInt(1000)));
 	    resp.add("kepler"+ (random.nextInt(1000)));
 	    
-	    for (int x = 0; x < 1000; x++) {
- 	    
-	    	    String RepoId = resp.get(random.nextInt(resp.size()));
-	    	
+	    Random r = new Random();
+        int[] ar1 = new int[1000];
+        for(int i = 0; i < ar1.length; i++) {
+            ar1[i] = r.nextInt(1000);
+            System.out.print(ar1[i] + "  ");
+
+	    
+	    List<String> repo = new ArrayList<String>();
+	    repo.add(resp.get(random.nextInt(resp.size())));
+	    
+	    for (int x = 0; x < 3; x++) {    	    
+	    	String RepoId = resp.get(random.nextInt(resp.size()));
 			newxml = 
 			"\t<machine id=\"" + (x+1) + "\" cores=\"" + (cores.get(random.nextInt(cores.size()))) 
 			+"\" processing=\"" + (processSpeed.get(random.nextInt(processSpeed.size()))) 
@@ -259,7 +267,7 @@ public class physicalMachine {
 			
 			+ "\t\t<statedelays startup=\"89000\" shutdown=\"29000\" />\n"
 			
-			+ "\t\t<repository id=\""+ RepoId + "\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
+			+ "\t\t<repository id=\""+ (x+1) + "\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
 			+ "\" inBW=\"" + inBW.get(random.nextInt(inBW.size())) + "\" outBW=\"" 
 			+ outBW.get(random.nextInt(outBW.size())) + "\" diskBW=\"" + diskBW.get(random.nextInt(diskBW.size())) + "\">\n"
 			
@@ -276,35 +284,39 @@ public class physicalMachine {
 					+ "max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size()))  +  "\" inState=\"default\" />\n"
 			+ "\t\t\t\t<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
 			+ "\t\t\t</powerstates>";
-
-	        file.write(newxml);
+			String EOxmlF = "\t\t</repository>\n"
+					+ "\t</machine>";
+			        
 	        
-	        for (int j = 0; j < 1000; j++) {
-	        String lat = "\t\t\t<latency towards=\"" + RepoId + "\" value=\"" + latency.get(random.nextInt(latency.size()))  + "\" from=\"" + resp + "\"/>\n";     
-	        file.write(lat);
-	        }
+			file.write(newxml);
 	        
-	        String EOxmlF = "\t\t</repository>\n"
-					+ "\t</machine>\n";
-			        file.write(EOxmlF);
-				    System.out.println(EOxmlF);
+	        file.write(EOxmlF);
+	        
+	        for (int j = 0; j < 3; j++) {
+		        String lat = "\t\t\t<latency towards=\"" + j + "\" value=\"5\"/>";     
+		        //System.out.println(lat);
+		        file.write(lat);
+		        }
+	        
 	        
 	        System.out.println(newxml);
-	    
-	    }    
-	    
-	    String cloudEnd = "\t\t</repository>\n"
-					+ "\t</machine>\n"
-					+ "</cloud>";
+	        System.out.println(EOxmlF);
+	        
+	        
+
+				    
+	    }   
+	       	    
+	    String cloudEnd = "</cloud>";
 	    file.write(cloudEnd);
 	    file.close();
 	    System.out.println(cloudEnd);
 	    
-	    IaaSService iaas=CloudLoader.loadNodes("PM.xml");
-	    if(iaas.machines.size()==1000) {
+	    IaaSService iaas = CloudLoader.loadNodes("PM.xml");
+	    if(iaas.machines.size() == 3) {
 	    	System.out.println("Finally we are there.");
-	    	NetworkNode nn1=iaas.machines.get(random.nextInt(1000)).localDisk;
-	    	NetworkNode nn2=iaas.machines.get(random.nextInt(1000)).localDisk; 
+	    	NetworkNode nn1 = iaas.machines.get(random.nextInt(3)).localDisk;
+	    	NetworkNode nn2 = iaas.machines.get(random.nextInt(3)).localDisk; 
 	    	
 	    	System.out.println("Network Node 1:" + nn1);
 	    	System.out.println("Network Node 2: " + nn2);
@@ -385,7 +397,7 @@ public class physicalMachine {
 		
 	}
 	*/
-	}
+	}}
 }
 
 

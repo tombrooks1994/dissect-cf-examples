@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import at.ac.uibk.dps.cloud.simulator.test.simple.cloud.networkNodeTest2;
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ConsumptionEventAdapter;
@@ -276,19 +275,27 @@ public class physicalMachine {
 			+ "idle=\"" + idlePowerPM.get(random.nextInt(idlePowerPM.size())) + "\" "
 					+ "max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size()))  +  "\" inState=\"default\" />\n"
 			+ "\t\t\t\t<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
-			+ "\t\t\t</powerstates>\n"
-			
-			+ "\t\t\t<latency towards=\"" + RepoId + "\" value=\"" + latency.get(random.nextInt(latency.size()))  + "\" from=\"" + resp + "\"/>\n"
-			+ "\t\t</repository>\n"
-			+ "\t</machine>\n";
-	        
+			+ "\t\t\t</powerstates>";
+
 	        file.write(newxml);
 	        
-	        //System.out.println(newxml);
+	        for (int j = 0; j < 1000; j++) {
+	        String lat = "\t\t\t<latency towards=\"" + RepoId + "\" value=\"" + latency.get(random.nextInt(latency.size()))  + "\" from=\"" + resp + "\"/>\n";     
+	        file.write(lat);
+	        }
+	        
+	        String EOxmlF = "\t\t</repository>\n"
+					+ "\t</machine>\n";
+			        file.write(EOxmlF);
+				    System.out.println(EOxmlF);
+	        
+	        System.out.println(newxml);
 	    
-	    }
-	    	    
-	    String cloudEnd = "</cloud>";
+	    }    
+	    
+	    String cloudEnd = "\t\t</repository>\n"
+					+ "\t</machine>\n"
+					+ "</cloud>";
 	    file.write(cloudEnd);
 	    file.close();
 	    System.out.println(cloudEnd);

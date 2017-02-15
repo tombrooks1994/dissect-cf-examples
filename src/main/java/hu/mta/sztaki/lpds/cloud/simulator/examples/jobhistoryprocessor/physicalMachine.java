@@ -195,11 +195,7 @@ public class physicalMachine {
 	     * Repository ID = randomly named.
 	     * */
 	    
-	    List<String> resp = new ArrayList<String>();
-	    resp.add("hydrogen");
-	    resp.add("carbon");
-	    resp.add("neon");
-	    resp.add("kepler");
+	    
 	    
 	    /**
 	     * End of repository array
@@ -234,9 +230,17 @@ public class physicalMachine {
 	    file.write(xmlSchema);
 	    System.out.println(xmlSchema);
 	    
+	    List<String> resp = new ArrayList<String>();
+	    resp.add("hydrogen" + (random.nextInt(1000)));
+	    resp.add("carbon" + (random.nextInt(1000)));
+	    resp.add("neon" + (random.nextInt(1000)));
+	    resp.add("kepler"+ (random.nextInt(1000)));
+	    
 	    for (int x = 0; x < 1000; x++) {
-	        
-	        newxml = 
+ 	    
+	    	    String RepoId = resp.get(random.nextInt(resp.size()));
+	    	
+			newxml = 
 			"\t<machine id=\"" + (x+1) + "\" cores=\"" + (cores.get(random.nextInt(cores.size()))) 
 			+"\" processing=\"" + (processSpeed.get(random.nextInt(processSpeed.size()))) 
 			+ "\" memory=\"" + (diskSpace.get(random.nextInt(diskSpace.size()))) + "\">\n"
@@ -256,7 +260,7 @@ public class physicalMachine {
 			
 			+ "\t\t<statedelays startup=\"89000\" shutdown=\"29000\" />\n"
 			
-			+ "\t\t<repository id=\"alpha-omega-"+ (x+1) + "\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
+			+ "\t\t<repository id=\""+ RepoId + "\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
 			+ "\" inBW=\"" + inBW.get(random.nextInt(inBW.size())) + "\" outBW=\"" 
 			+ outBW.get(random.nextInt(outBW.size())) + "\" diskBW=\"" + diskBW.get(random.nextInt(diskBW.size())) + "\">\n"
 			
@@ -274,7 +278,7 @@ public class physicalMachine {
 			+ "\t\t\t\t<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
 			+ "\t\t\t</powerstates>\n"
 			
-			+ "\t\t\t<latency towards=\"alpha-omega-"+(x+2) +"\" value=\"" + latency.get(random.nextInt(latency.size()))  + "\" />\n"
+			+ "\t\t\t<latency towards=\"" + RepoId + "\" value=\"" + latency.get(random.nextInt(latency.size()))  + "\" from=\"" + resp + "\"/>\n"
 			+ "\t\t</repository>\n"
 			+ "\t</machine>\n";
 	        
@@ -292,15 +296,18 @@ public class physicalMachine {
 	    IaaSService iaas=CloudLoader.loadNodes("PM.xml");
 	    if(iaas.machines.size()==1000) {
 	    	System.out.println("Finally we are there.");
-	    	NetworkNode nn1=iaas.machines.get(0).localDisk;
-	    	NetworkNode nn2=iaas.machines.get(4).localDisk; 
+	    	NetworkNode nn1=iaas.machines.get(random.nextInt(1000)).localDisk;
+	    	NetworkNode nn2=iaas.machines.get(random.nextInt(1000)).localDisk; 
 	    	
 	    	System.out.println("Network Node 1:" + nn1);
 	    	System.out.println("Network Node 2: " + nn2);
 	    	
 	    	final long size = 10000;
 	    	
-	    	NetworkNode.initTransfer(size, ResourceConsumption.unlimitedProcessing, nn1, nn2, new ConsumptionEventAdapter());	    	
+	    	NetworkNode.initTransfer(size, ResourceConsumption.unlimitedProcessing, nn1, nn2, new ConsumptionEventAdapter());
+	    	
+	    	
+	    	Timed.simulateUntilLastEvent();
 	    	System.out.println("Network Node 1:" + nn1);
 	    	System.out.println("Network Node 2: " + nn2);
 	    }

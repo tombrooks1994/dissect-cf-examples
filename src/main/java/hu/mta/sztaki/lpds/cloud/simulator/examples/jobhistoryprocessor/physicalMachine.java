@@ -1,22 +1,33 @@
 package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
 
 
-import java.io.File;
 import java.io.FileWriter;
-import java.io.RandomAccessFile;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.Assert;
-
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ConsumptionEventAdapter;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode;
+import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
 import hu.mta.sztaki.lpds.cloud.simulator.util.CloudLoader;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
+import hu.mta.sztaki.lpds.cloud.simulator.Timed;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
+import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode;
+import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
+
+import java.util.HashMap;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import at.ac.uibk.dps.cloud.simulator.test.ConsumptionEventAssert;
+import at.ac.uibk.dps.cloud.simulator.test.ConsumptionEventFoundation;
 /**
  * This class is for the creation of a physical machine. There is a physical machine
  * component helper at the top to show the user what the minimum and maximum values
@@ -183,11 +194,7 @@ public class physicalMachine {
 	     * Repository ID = randomly named.
 	     * */
 	    
-	    List<String> resp = new ArrayList<String>();
-	    resp.add("hydrogen");
-	    resp.add("carbon");
-	    resp.add("neon");
-	    resp.add("kepler");
+	    
 	    
 	    /**
 	     * End of repository array
@@ -222,29 +229,38 @@ public class physicalMachine {
 	    file.write(xmlSchema);
 	    System.out.println(xmlSchema);
 	    
-	    for (int x = 0; x < 1000; x++) {
-	        
-	        newxml = 
+	    List<String> resp = new ArrayList<String>();
+	    resp.add("hydrogen" + (random.nextInt(1000)));
+	    resp.add("carbon" + (random.nextInt(1000)));
+	    resp.add("neon" + (random.nextInt(1000)));
+	    resp.add("kepler"+ (random.nextInt(1000)));
+	    
+	    Random r = new Random();
+        int[] ar1 = new int[39];
+        
+	    
+	    for (int x = 0; x < 39; x++) {    	    
+			newxml = 
 			"\t<machine id=\"" + (x+1) + "\" cores=\"" + (cores.get(random.nextInt(cores.size()))) 
 			+"\" processing=\"" + (processSpeed.get(random.nextInt(processSpeed.size()))) 
 			+ "\" memory=\"" + (diskSpace.get(random.nextInt(diskSpace.size()))) + "\">\n"
 			
-			+ "\t\t<powerstates kind=\"host\">\n"
+			+ "\t\t\t<powerstates kind=\"host\">\n"
 			
-			+ "\t\t\t<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" "
+			+ "\t\t\t\t<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel\" "
 			+ "idle=\"" + idlePowerPM.get(random.nextInt(idlePowerPM.size())) 
 			+ "\" max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size())) 
 			+ "\" inState=\"default\" />\n"
 			
-			+ "\t\t\t<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" "
+			+ "\t\t\t\t<power	model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" "
 			+ "idle=\"" + idlePowerPM.get(random.nextInt(idlePowerPM.size())) 
 			+ "\" max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size())) + "\" inState=\"OFF\" />\n"
 			
-			+ "\t\t</powerstates>\n"
+			+ "\t\t\t</powerstates>\n"
 			
 			+ "\t\t<statedelays startup=\"89000\" shutdown=\"29000\" />\n"
 			
-			+ "\t\t<repository id=\"alpha-omega-"+ (x+1) + "\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
+			+ "\t\t<repository id=\""+ (x+1) + "\" capacity=\"" + diskSpace.get(random.nextInt(diskSpace.size())) 
 			+ "\" inBW=\"" + inBW.get(random.nextInt(inBW.size())) + "\" outBW=\"" 
 			+ outBW.get(random.nextInt(outBW.size())) + "\" diskBW=\"" + diskBW.get(random.nextInt(diskBW.size())) + "\">\n"
 			
@@ -260,43 +276,128 @@ public class physicalMachine {
 			+ "idle=\"" + idlePowerPM.get(random.nextInt(idlePowerPM.size())) + "\" "
 					+ "max=\"" + maxPowerPM.get(random.nextInt(maxPowerPM.size()))  +  "\" inState=\"default\" />\n"
 			+ "\t\t\t\t<power model=\"hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel\" idle=\"0\" max=\"0\" inState=\"OFF\" />\n"
-			+ "\t\t\t</powerstates>\n"
+			+ "\t\t\t</powerstates>";
+
+			file.write(newxml);
 			
-			+ "\t\t\t<latency towards=\"alpha-omega-"+(x+2) +"\" value=\"" + latency.get(random.nextInt(latency.size()))  + "\" />\n"
-			+ "\t\t</repository>\n"
-			+ "\t</machine>\n";
-	        
-	        file.write(newxml);
-	        
+			for (int j = 0; j < 39; j++) {
+		        String lat = "\t\t\t<latency towards=\"" + (j+1) + "\" value=\"5\"/>";     
+		        //System.out.println(lat);
+		        file.write(lat);
+		        }
+			String EOxmlF = "\t\t</repository>\n"
+					+ "\t</machine>";
+	        file.write(EOxmlF);
+
 	        System.out.println(newxml);
+	        System.out.println(EOxmlF);
 	    
-	    }
-	    	    
+	    }   
+	       	    
 	    String cloudEnd = "</cloud>";
 	    file.write(cloudEnd);
 	    file.close();
 	    System.out.println(cloudEnd);
 	    
-	    IaaSService iaas=CloudLoader.loadNodes("PM.xml");
-	    if(iaas.machines.size()==1000) {
+	    IaaSService iaas = CloudLoader.loadNodes("PM.xml");
+	    if(iaas.machines.size() == 39) {
 	    	System.out.println("Finally we are there.");
+	    	NetworkNode nn1 = iaas.machines.get(random.nextInt(39)).localDisk;
+	    	NetworkNode nn2 = iaas.machines.get(random.nextInt(39)).localDisk; 
+	    	
+	    	
+	    	
+	    	final long size = 10000;
+	    	
+	    	if (nn1 != nn2) {
+	    		System.out.println("Network Node 1: " + nn1);
+		    	System.out.println("Network Node 2: " + nn2);
+	    	NetworkNode.initTransfer(size, ResourceConsumption.unlimitedProcessing, nn1, nn2, new ConsumptionEventAdapter());
+	    	} else {
+	    		
+	    		System.out.println("You can't send data to yourself!");
+	    		
+	    	}
+	    	
+	    	if (nn1 != nn2) {
+	    	Timed.simulateUntilLastEvent();
+	    	System.out.println("Network Node 1: " + nn1);
+	    	System.out.println("Network Node 2: " + nn2);
+	    } else {
+    		
+    		System.out.println("You can't send data to yourself!");
+    		
+    	}
 	    }
+	    
+	    
 	     else {
         	
         	System.out.println("Failure, The physical machines have failed to be created.");
-        	
+	    	
         }
+        
 	    
-	    }
 	    
 	    /**
 	     * To start connecting node together using NetworkNode.initTransfer(); 
 	     * need to learn how to declare it. 
 	     * */
 	    
-	    NetworkNode.initTransfer(0, 0, null, null, null);
-	    Timed.simulateUntilLastEvent();
+	    /**
+	     * ResourceConsumption initTransfer(final long size, final double limit, final NetworkNode from,
+	     final NetworkNode to, final ResourceConsumption.ConsumptionEvent e) throws NetworkException {
+	    */
+	    
 
 	    /** End of physical machine creator */
+	    }	    
+	
+	/**
+	public static class NetworkNodeOne {
+		
+		private int inbw = 100000; 
+		private int outbw = 100000;
+		private int diskbw = 100000; 
+		public final static int targetlat = 2; //ticks
+		public final static int sourcelat = 3; //ticks
+		public final static String sourceName = "Source";
+		public final static String targetName = "Target";
+		public final static String thirdName = "Unconnected";
+		NetworkNode source, target, third;
+		static final long dataToBeSent = aSecond * inBW;
+		static final long dataToBeStored = aSecond * diskBW / 2;
+		
+		public static HashMap<String, Integer> setupALatencyMap() {
+			HashMap<String, Integer> lm = new HashMap<String, Integer>();
+			lm.put(sourceName, sourcelat);
+			lm.put(targetName, targetlat);
+			return lm;
+		}
+		
+		public void nodeSetup() {
+			HashMap<String, Integer> lm = setupALatencyMap();
+			source = new NetworkNode(sourceName, inbw, outbw, diskbw, lm);
+			target = new NetworkNode(targetName, inbw, outbw, diskbw, lm);
+			third = new NetworkNode(thirdName, inbw, outbw, diskbw, lm);
+		}
+		
+		public void createConnection(final long length, final NetworkNode source,
+		final NetworkNode target, final long expectedDelay)
+		throws NetworkException {		
+			
+		NetworkNode.initTransfer(length, ResourceConsumption.unlimitedProcessing,
+		source, target, new ConsumptionEventAssert(Timed.getFireCount()
+		+ expectedDelay, true));
+		
+		}
+	
+		//Timed.simulateUntilLastEvent();
+		
 	}
+	*/
+	}
+	    
 }
+
+

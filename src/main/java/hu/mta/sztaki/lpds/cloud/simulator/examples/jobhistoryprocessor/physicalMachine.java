@@ -236,10 +236,10 @@ public class physicalMachine {
 	    resp.add("kepler"+ (random.nextInt(1000)));
 	    
 	    Random r = new Random();
-        int[] ar1 = new int[5];
+        int[] ar1 = new int[39];
         
 	    
-	    for (int x = 0; x < 5; x++) {    	    
+	    for (int x = 0; x < 39; x++) {    	    
 			newxml = 
 			"\t<machine id=\"" + (x+1) + "\" cores=\"" + (cores.get(random.nextInt(cores.size()))) 
 			+"\" processing=\"" + (processSpeed.get(random.nextInt(processSpeed.size()))) 
@@ -280,7 +280,7 @@ public class physicalMachine {
 
 			file.write(newxml);
 			
-			for (int j = 0; j < 5; j++) {
+			for (int j = 0; j < 39; j++) {
 		        String lat = "\t\t\t<latency towards=\"" + (j+1) + "\" value=\"5\"/>";     
 		        //System.out.println(lat);
 		        file.write(lat);
@@ -300,10 +300,10 @@ public class physicalMachine {
 	    System.out.println(cloudEnd);
 	    
 	    IaaSService iaas = CloudLoader.loadNodes("PM.xml");
-	    if(iaas.machines.size() == 5) {
+	    if(iaas.machines.size() == 39) {
 	    	System.out.println("Finally we are there.");
-	    	NetworkNode nn1 = iaas.machines.get(random.nextInt(5)).localDisk;
-	    	NetworkNode nn2 = iaas.machines.get(random.nextInt(5)).localDisk; 
+	    	NetworkNode nn1 = iaas.machines.get(random.nextInt(39)).localDisk;
+	    	NetworkNode nn2 = iaas.machines.get(random.nextInt(39)).localDisk; 
 	    	
 	    	
 	    	

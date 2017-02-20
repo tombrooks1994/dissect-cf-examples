@@ -36,7 +36,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.util.CloudLoader;
 public class physicalMachine {
 	
 	public static int machineCount=1000;
-	public static int transferCount=10000000;
+	public static int transferCount=1000;
 
 	/**
 	 * @param args
@@ -285,55 +285,46 @@ public class physicalMachine {
 	    	//System.out.println("Finally we are there.");
 	    	NetworkNode underDDOS=iaas.machines.get(0).localDisk;
 	    	NetworkNode userofDDOSMachine=iaas.machines.get(1).localDisk;
-	    	NetworkNode AttackerOne = iaas.machines.get(random.nextInt(machineCount)).localDisk;
-	    	NetworkNode AttackerTwo = iaas.machines.get(random.nextInt(machineCount)).localDisk; 
+	    	
+	    	/**NetworkNode AttackerTwo = iaas.machines.get(random.nextInt(machineCount)).localDisk; 
 	    	NetworkNode AttackerThree = iaas.machines.get(random.nextInt(machineCount)).localDisk;
-	    	NetworkNode AttackerFour = iaas.machines.get(random.nextInt(machineCount)).localDisk;
+	    	NetworkNode AttackerFour = iaas.machines.get(random.nextInt(machineCount)).localDisk;*/
 	    		    	
 	    	final long s = random.nextInt(transferCount);
 	    	final long si = random.nextInt(transferCount);
 	    	final long siz = random.nextInt(transferCount);
 	    	final long size = random.nextInt(transferCount);
 	    	
-	    	if (AttackerOne != AttackerTwo) {
-	    		System.out.println("Attacker 1: " + AttackerOne);
-		    	System.out.println("Attacker 2: " + AttackerTwo + "\n");
-		    	Timed.getFireCount();
-		    	NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, underDDOS, userofDDOSMachine, new Timer());
-		    	NetworkNode.initTransfer(si, ResourceConsumption.unlimitedProcessing, AttackerOne, AttackerTwo, new Timer());
-		    	NetworkNode.initTransfer(siz, ResourceConsumption.unlimitedProcessing, AttackerThree, AttackerFour, new Timer());
-	    	} else {
-	    		System.out.println("You can't send data to yourself!");	
-	    	}
+	    	final int nodeCount = 10;
 	    	
-	    	if (AttackerOne != AttackerTwo) {
+	    	for (int n = 1; n<machineCount; n++) {
+		    	NetworkNode Attacker = iaas.machines.get(random.nextInt(n)).localDisk;
+		    		    	
+	    		//System.out.println("Attacker " + n+1 + ":"  + Attacker);
+	    		//System.out.println("Attacker " + n+1 + ":"  + Attacker);		    	Timed.getFireCount();
+		    	NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, underDDOS, userofDDOSMachine, new Timer());
+		    	NetworkNode.initTransfer(si, ResourceConsumption.unlimitedProcessing, Attacker, underDDOS, new Timer()); 	
+	    	
 	    	Timed.simulateUntilLastEvent();
     	
-	    	final long jumptime = 20000; //in ticks 
-	    	long time = Timed.jumpTime(jumptime);
-	    	long exec = 10000;
+	    	//final long jumptime = 20000; //in ticks 
+	    	long time = Timed.getFireCount();
+	    	long exec = 90000;
 	    	
-	    	System.out.println("Attacker 1: " + AttackerOne);
-	    	System.out.println("Attacker 2: " + AttackerTwo);
-	    	System.out.println("Attacker 3: " + AttackerThree);
-	    	System.out.println("Attacker 4: " + AttackerFour);
+	    	System.out.println("Attacker " + n+1 + ":"  + Attacker);
+	    	//System.out.println("Attacker " + n+1 + ":"  + Attacker);
 	    	System.out.println((Timed.getFireCount()) + "ms\n");
 	    	System.out.println("DDOS Machine: " + underDDOS);
-	    	System.out.println("User of DDOS: " + userofDDOSMachine);
-	    	if (time < exec) {
+	    	//System.out.println("User of DDOS: " + userofDDOSMachine);
+	    	if (time > exec) {
 	    		System.out.println("The network is under DDOS");
 
 	    	} else {
 		    	System.out.println("Network has transfered " + Timed.getFireCount() +"ms");
 	    	}
 	    	//System.out.println("The network nodes finally work");
-	    } else {
-    		System.out.println("You can't send data to yourself!");
-    	}
-	    	}
-	    else {	
-        	System.out.println("Failure, The physical machines have failed to be created.");
-        }   
+	    } 
+	    }
 	  }
 	}
 }

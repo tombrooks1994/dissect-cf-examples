@@ -2,10 +2,14 @@ package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
 
 
 import java.io.FileWriter;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import at.ac.uibk.dps.cloud.simulator.test.ConsumptionEventAssert;
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
@@ -32,11 +36,31 @@ import uk.ac.ljmu.fet.cs.DDOSInterface;
  * 		{Failure trace}
  * @E-mail
  * 		{t.s.brooks@2013.ljmu.ac.uk}
- * 
  */
 
 
+
 public class physicalMachine implements DDOSInterface {
+	
+	
+
+	@Override
+	public PhysicalMachine getUnderDDOSMachine() {
+		// TODO Auto-generated method stub
+		return getUnderDDOSMachine();
+	}
+
+	@Override
+	public PhysicalMachine getUserOftheUnderDDOSMachine() {
+		// TODO Auto-generated method stub
+		return getUserOftheUnderDDOSMachine();
+	}
+
+	@Override
+	public void startDDOSing() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	public static int machineCount=1000;
 	public static int transferCount=1000;
@@ -46,15 +70,10 @@ public class physicalMachine implements DDOSInterface {
     public static IaaSService clouder;
     public static NetworkNode underDDOS;
     public static NetworkNode userofDDOSMachine;
-	/**
-	 * @param args
-	 * @throws Exception
-	 */
-	
-	public static void main(String[] args) throws Exception {
-		
-		
-	
+    public static IaaSService iaas;
+    public static NetworkNode Attacker;
+    
+	public static void main(String[] args) throws Exception {	
 	/**
 	 * 2nd stage creates the 1000 physical machines using the array's that are created
 	 * above. The helper above just sets example minimums and maximums there will be
@@ -68,8 +87,6 @@ public class physicalMachine implements DDOSInterface {
 		 * in the component helper such as cores, memory, disk space and power. 
 		 * These are all measure in the same way that the helper is measured in.		 * 
 		 */
-	
-		
 		/** Cores Array */
 	    List<String> cores = new ArrayList<String>();
 	    cores.add("32");
@@ -130,7 +147,8 @@ public class physicalMachine implements DDOSInterface {
 	    
 	    /**
 	     * Power max array 
-	     * 250w-750w*/
+	     * 250w-750w
+	     * */
 	    	    
 	    List<String> maxPowerPM = new ArrayList<String>();
 	    maxPowerPM.add("250");
@@ -142,7 +160,8 @@ public class physicalMachine implements DDOSInterface {
 	    
 	    /**
 	     * Power max array 
-	     * 25w-75w*/
+	     * 25w-75w
+	     * */
 	    
 	    List<String> idlePowerPM = new ArrayList<String>();
 	    idlePowerPM.add("25");
@@ -213,11 +232,8 @@ public class physicalMachine implements DDOSInterface {
 	     * */
 	    Random random = new Random();
 	    try (FileWriter file = new FileWriter("PM.xml")) {
-	    
-	    	
-	    	
 	    xmlSchema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
-	    		+ "<cloud id=\""+cloud+"oxygen-1\"	scheduler=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler\" pmcontroller=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines\">\n";
+	    		+ "<cloud id=\"oxygen-1\"	scheduler=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler\" pmcontroller=\"hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines\">\n";
 	    file.write(xmlSchema);
 	    //System.out.println(xmlSchema);
 	    	    
@@ -277,9 +293,6 @@ public class physicalMachine implements DDOSInterface {
 					+ "\t</machine>";
 	        file.write(EOxmlF);
 
-	        //System.out.println(newxml);
-	        //System.out.println(EOxmlF);
-	    
 	    }   
 	       	    
 	    String cloudEnd = "</cloud>";
@@ -287,77 +300,58 @@ public class physicalMachine implements DDOSInterface {
 	    file.close();
 	    //System.out.println(cloudEnd);
 	    
-	    IaaSService iaas = CloudLoader.loadNodes("PM.xml");
-	    IaaSService clouder = CloudLoader.loadNodes(xmlSchema);
+	    iaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
+	    
+	    //clouder = CloudLoader.loadNodes("PM.xml");
 	    if(iaas.machines.size() == machineCount) {
-	    	//System.out.println("Finally we are there.");
 	    	underDDOS=iaas.machines.get(0).localDisk;
 	    	userofDDOSMachine=iaas.machines.get(1).localDisk;
-	    	
-	    	/**NetworkNode AttackerTwo = iaas.machines.get(random.nextInt(machineCount)).localDisk; 
-	    	NetworkNode AttackerThree = iaas.machines.get(random.nextInt(machineCount)).localDisk;
-	    	NetworkNode AttackerFour = iaas.machines.get(random.nextInt(machineCount)).localDisk;*/
 	    		    	
 	    	final long s = random.nextInt(transferCount);
-	    	final long si = random.nextInt(transferCount);
-	    	final long siz = random.nextInt(transferCount);
-	    	final long size = random.nextInt(transferCount);
-	    	
-	    	final int nodeCount = 10;
 	    	
 	    	for (int n = 1; n<400; n++) {
-		    	NetworkNode Attacker = iaas.machines.get(random.nextInt(n)).localDisk;
-		    		    	
-	    		//System.out.println("Attacker " + n+1 + ":"  + Attacker);
-	    		//System.out.println("Attacker " + n+1 + ":"  + Attacker);		    	Timed.getFireCount();
+		    	Attacker = iaas.machines.get(random.nextInt(n)).localDisk;
 		    	NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, underDDOS, userofDDOSMachine, new Timer());
 		    	NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, Attacker, underDDOS, new Timer()); 
 		    	NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, underDDOS, Attacker, new Timer());
 	    	
 	    	Timed.simulateUntilLastEvent();
-    	
-	    	//final long jumptime = 20000; //in ticks 
 	    	long time = Timed.getFireCount();
 	    	long exec = 80000;
 	    	
 	    	System.out.println("Attacker " + n + ":"  + Attacker);
-	    	//System.out.println("Attacker " + n+1 + ":"  + Attacker);
 	    	System.out.println((Timed.getFireCount()) + "ms\n");
 	    	System.out.println("DDOS Machine: " + underDDOS);
-	    	//System.out.println("User of DDOS: " + userofDDOSMachine);
 	    	if (time > exec) {
 	    		System.out.println("The network is under DDOS");
-
 	    	} else {
 		    	System.out.println("Network has transfered " + Timed.getFireCount() +"ms");
 	    	}
-	    	//System.out.println("The network nodes finally work");
 	    } 
 	    }
+	    
+	    
 	  }
+	    
 	}
+	
+@Override
+public IaaSService createCloudAndReturnWithIt() {
+try {
+		iaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
+	} catch (IOException | SAXException | ParserConfigurationException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+    //clouder = CloudLoader.loadNodes("PM.xml");
 
-	@Override
-	public IaaSService createCloudAndReturnWithIt() {
-		clouder = createCloudAndReturnWithIt(); 
-		return clouder;
-	}
+    if (iaas != null) {
+    	System.out.println("I worked!\n");
+	return (createCloudAndReturnWithIt());
+    } else {
+    	System.out.println("Fail!");
+    	return null;
+    } 
 
-	@Override
-	public PhysicalMachine getUnderDDOSMachine() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public PhysicalMachine getUserOftheUnderDDOSMachine() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void startDDOSing() {
-		// TODO Auto-generated method stub
-		
-	}
+ }
 }

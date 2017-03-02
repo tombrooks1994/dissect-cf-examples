@@ -3,6 +3,7 @@ package hu.mta.sztaki.lpds.cloud.simulator.examples.jobhistoryprocessor;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,14 +12,11 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import at.ac.uibk.dps.cloud.simulator.test.ConsumptionEventAssert;
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ConsumptionEventAdapter;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode;
-import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.util.CloudLoader;
 import uk.ac.ljmu.fet.cs.DDOSInterface;
 /**
@@ -42,23 +40,67 @@ import uk.ac.ljmu.fet.cs.DDOSInterface;
 
 public class physicalMachine implements DDOSInterface {
 	
-	
+	@SuppressWarnings("static-access")
+	private IaaSService createCloudAndReturnWithIt(IaaSService newiaas,  int n) throws IOException, SAXException, ParserConfigurationException {
 
+		this.iaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
+		newiaas = this.iaas;
+		return newiaas;
+		
+	}
+	
+	private int count = 1; 
+	private int maxTries; 
+	
 	@Override
-	public PhysicalMachine getUnderDDOSMachine() {
+	public IaaSService createCloudAndReturnWithIt() {
 		// TODO Auto-generated method stub
-		return getUnderDDOSMachine();
+		if (count++ == 1) {
+			try {
+				IaaSService iaaas = createCloudAndReturnWithIt(iaas, 0);
+				return iaas;
+			} catch (IOException | SAXException | ParserConfigurationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+			return iaas;
 	}
 
+	private PhysicalMachine getUnderDDOSMachine(NetworkNode DDOS) {
+		
+    	DDOS = underDDOS=iaas.machines.get(0).localDisk;;
+		return null;
+		
+	}
+	
+	@Override
+	public PhysicalMachine getUnderDDOSMachine() {
+		
+		PhysicalMachine DDOS = getUnderDDOSMachine(underDDOS);
+		// TODO Auto-generated method stub
+		return DDOS;
+	}
+
+	private PhysicalMachine getUserOfUnderDDOSMachine(NetworkNode userDDOSM) {
+		
+    	userDDOSM = userofDDOSMachine=iaas.machines.get(1).localDisk;;
+		return null;
+		
+	}
+	
 	@Override
 	public PhysicalMachine getUserOftheUnderDDOSMachine() {
 		// TODO Auto-generated method stub
-		return getUserOftheUnderDDOSMachine();
+		PhysicalMachine DDOSUser = getUserOfUnderDDOSMachine(userofDDOSMachine);
+		// TODO Auto-generated method stub
+		return DDOSUser;
 	}
 
 	@Override
 	public void startDDOSing() {
 		// TODO Auto-generated method stub
+		
 		
 	}
 	
@@ -335,35 +377,5 @@ public class physicalMachine implements DDOSInterface {
 	    
 	}
 
-	private IaaSService createCloudAndReturnWithIt(IaaSService newiaas,  int n) throws IOException, SAXException, ParserConfigurationException {
-		for (n = 0; n<2; n++) {
-		newiaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
-		//secondiaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
-		return newiaas;
-		} 
-		return null;
-	}
 	
-	private int count = 0;
-	
-	@Override
-	public IaaSService createCloudAndReturnWithIt() {
-		// TODO Auto-generated method stub
-		IaaSService tester = null;
-		try {
-			for (count = 0; count<2; count++) {
-			if (count++ == 0) {
-			tester = createCloudAndReturnWithIt(iaas, 0);
-			}
-			}
-		} catch (IOException | SAXException | ParserConfigurationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-			
-			return tester;
-		
-	}
-	
-	
-	}
+}

@@ -334,24 +334,36 @@ public class physicalMachine implements DDOSInterface {
 	  }
 	    
 	}
-	
-@Override
-public IaaSService createCloudAndReturnWithIt() {
-try {
-		iaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
-	} catch (IOException | SAXException | ParserConfigurationException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+
+	private IaaSService createCloudAndReturnWithIt(IaaSService newiaas,  int n) throws IOException, SAXException, ParserConfigurationException {
+		for (n = 0; n<2; n++) {
+		newiaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
+		//secondiaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
+		return newiaas;
+		} 
+		return null;
 	}
-    //clouder = CloudLoader.loadNodes("PM.xml");
-
-    if (iaas != null) {
-    	System.out.println("I worked!\n");
-	return (createCloudAndReturnWithIt());
-    } else {
-    	System.out.println("Fail!");
-    	return null;
-    } 
-
- }
-}
+	
+	private int count = 0;
+	
+	@Override
+	public IaaSService createCloudAndReturnWithIt() {
+		// TODO Auto-generated method stub
+		IaaSService tester = null;
+		try {
+			for (count = 0; count<2; count++) {
+			if (count++ == 0) {
+			tester = createCloudAndReturnWithIt(iaas, 0);
+			}
+			}
+		} catch (IOException | SAXException | ParserConfigurationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+			
+			return tester;
+		
+	}
+	
+	
+	}

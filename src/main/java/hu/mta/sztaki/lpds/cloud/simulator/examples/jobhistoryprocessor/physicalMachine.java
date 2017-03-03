@@ -17,8 +17,10 @@ import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode;
+import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
 import hu.mta.sztaki.lpds.cloud.simulator.util.CloudLoader;
 import uk.ac.ljmu.fet.cs.DDOSInterface;
+import uk.ac.ljmu.fet.cs.DemoClass;
 /**
  * This class is for the creation of a physical machine. There is a physical machine
  * component helper at the top to show the user what the minimum and maximum values
@@ -67,42 +69,82 @@ public class physicalMachine implements DDOSInterface {
 			return iaas;
 	}
 
-	private PhysicalMachine getUnderDDOSMachine(NetworkNode DDOS) {
-		
-    	DDOS = underDDOS=iaas.machines.get(0).localDisk;;
-		return null;
-		
-	}
 	
 	@Override
 	public PhysicalMachine getUnderDDOSMachine() {
-		
-		PhysicalMachine DDOS = getUnderDDOSMachine(underDDOS);
+		PhysicalMachine DDOS = iaas.machines.get(0);
 		// TODO Auto-generated method stub
 		return DDOS;
 	}
 
-	private PhysicalMachine getUserOfUnderDDOSMachine(NetworkNode userDDOSM) {
-		
-    	userDDOSM = userofDDOSMachine=iaas.machines.get(1).localDisk;;
-		return null;
-		
-	}
 	
 	@Override
 	public PhysicalMachine getUserOftheUnderDDOSMachine() {
 		// TODO Auto-generated method stub
-		PhysicalMachine DDOSUser = getUserOfUnderDDOSMachine(userofDDOSMachine);
+		PhysicalMachine DDOSUser = iaas.machines.get(1);
 		// TODO Auto-generated method stub
 		return DDOSUser;
 	}
-
+		
 	@Override
 	public void startDDOSing() {
 		// TODO Auto-generated method stub
-		
-		
-	}
+		   
+		    	Random random = new Random();	    	
+		    	
+		    	final long s = random.nextInt(transferCount);
+		    	try {
+					this.iaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
+				} catch (IOException | SAXException | ParserConfigurationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+		    	for (int n = 1; n<1000; n++) {
+		    		DemoClass name = new DemoClass();
+		    		userofDDOSMachine=getUserOftheUnderDDOSMachine().localDisk;
+		    		underDDOS=getUnderDDOSMachine().localDisk;
+			    	Attacker = iaas.machines.get(random.nextInt(n)).localDisk;
+			    	long begin = Timed.getFireCount();
+		    		
+			    				    	
+			    	try {
+						NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, underDDOS, userofDDOSMachine, new Timer());
+						begin++;
+			    	} catch (NetworkException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			   
+			    	try {
+						NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, Attacker, underDDOS, new Timer());
+						begin++;
+			    	} catch (NetworkException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+			    	try {
+						
+			    		NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, underDDOS, Attacker, new Timer());
+			    		begin++;
+			    	} catch (NetworkException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    	
+			    	Timed.simulateUntilLastEvent();
+			    	long end = Timed.getFireCount(); 
+			    	name.getValue();
+			    	return;
+			    	
+		    	//long time = Timed.getFireCount();
+		    	//long exec = 80000;
+		    	
+		    	//System.out.println("Attacker " + n + ":"  + Attacker);
+		    	//System.out.println((Timed.getFireCount()) + "ms\n");
+		    	//System.out.println("DDOS Machine: " + underDDOS);
+		    	}
+		    } 
+
 	
 	public static int machineCount=1000;
 	public static int transferCount=1000;
@@ -345,32 +387,7 @@ public class physicalMachine implements DDOSInterface {
 	    iaas = CloudLoader.loadNodes("C:\\Users\\Tom\\git\\dissect-cf-examples\\PM.xml");
 	    
 	    //clouder = CloudLoader.loadNodes("PM.xml");
-	    if(iaas.machines.size() == machineCount) {
-	    	underDDOS=iaas.machines.get(0).localDisk;
-	    	userofDDOSMachine=iaas.machines.get(1).localDisk;
-	    		    	
-	    	final long s = random.nextInt(transferCount);
-	    	
-	    	for (int n = 1; n<400; n++) {
-		    	Attacker = iaas.machines.get(random.nextInt(n)).localDisk;
-		    	NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, underDDOS, userofDDOSMachine, new Timer());
-		    	NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, Attacker, underDDOS, new Timer()); 
-		    	NetworkNode.initTransfer(s, ResourceConsumption.unlimitedProcessing, underDDOS, Attacker, new Timer());
-	    	
-	    	Timed.simulateUntilLastEvent();
-	    	long time = Timed.getFireCount();
-	    	long exec = 80000;
-	    	
-	    	System.out.println("Attacker " + n + ":"  + Attacker);
-	    	System.out.println((Timed.getFireCount()) + "ms\n");
-	    	System.out.println("DDOS Machine: " + underDDOS);
-	    	if (time > exec) {
-	    		System.out.println("The network is under DDOS");
-	    	} else {
-		    	System.out.println("Network has transfered " + Timed.getFireCount() +"ms");
-	    	}
-	    } 
-	    }
+	 
 	    
 	    
 	  }
